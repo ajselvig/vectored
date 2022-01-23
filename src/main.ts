@@ -1,18 +1,28 @@
 import './styles.css'
 import Project from './model/project'
 import * as tuff from 'tuff-core'
+import { ProjectPart } from './view/project-part'
 
 console.log('tuff: ', tuff)
 
 class App extends tuff.parts.Part<{}> {
+
+    projectPart!: ProjectPart
+
+    init() {
+        const project = new Project()
+        project.makeTile(0, 0, 100, 100)
+        project.makeTile(200, 0, 300, 100)
+        project.makeTile(0, 200, 300, 300)
+        this.projectPart = this.makePart(ProjectPart, project)
+    }
+
     render(parent: tuff.tags.DivTag) {
-        parent.div({text: "Hello Tiny Vector"})
+        parent.part(this.projectPart)
     }
 
 }
 
-const doc = new Project()
-doc.makeTile(0, 0, 100, 100)
-doc.makeTile(200, 0, 300, 100)
 
 tuff.parts.Part.mount(App, 'vectored-app', {})
+

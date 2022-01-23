@@ -3,11 +3,11 @@ import Model, { IModel } from './model'
 import Tile from './tile'
 
 export default class Project extends Model<Tile> {
-    readonly allChildren: {[id: string]: IModel}
+    readonly items: {[id: string]: IModel}
 
     constructor(id?: string|null) {
         super('project', id)
-        this.allChildren = {}
+        this.items = {}
     }
 
     makeTile(xmin: number, ymin: number, xmax: number, ymax: number): Tile {
@@ -20,13 +20,17 @@ export default class Project extends Model<Tile> {
         return this
     }
 
+    register(item: IModel) {
+        this.items[item.id] = item
+    }
+
     /**
-     * Globally looks up a record by id
-     * @param id the id of the record
-     * @returns the child
+     * Globally looks up an item by id
+     * @param id the id of the item
+     * @returns the item
      */
     find<T extends IModel>(id: string): T {
-        return this.children[id] as any as T
+        return this.items[id] as any as T
     }
 
 }

@@ -23,5 +23,29 @@ export default class Tile extends ProjectModel<Path | Group> {
     place(xmin: number, ymin: number, xmax: number, ymax: number) {
         this.box = new Flatten.Box(xmin, ymin, xmax, ymax)   
     }
+
+    get left(): number {
+        return this.box.xmin
+    }
+
+    get right(): number {
+        return this.box.xmax
+    }
+
+    get top(): number {
+        return this.box.ymin
+    }
+
+    get bottom(): number {
+        return this.box.ymax
+    }
+
+    get width(): number {
+        return this.box.xmax - this.box.xmin
+    }
+
+    get height(): number {
+        return this.box.ymax - this.box.ymin
+    }
     
 }

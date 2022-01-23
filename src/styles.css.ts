@@ -38,6 +38,19 @@ const scalePush = {
     }
 }
 
+const absoluteFill = {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0
+} as const
+
+const frameShadow = {
+    boxShadow: '0 1px 6px rgba(0, 0, 0, 0.2)'
+}
+
+
 /**
  * Global
  */
@@ -165,3 +178,18 @@ globalStyle('label input', {
     width: 'initial'
 })
 
+
+/**
+ * Viewport
+ */
+
+export const viewport = style({
+    backgroundColor: '#f0f0f0',
+    ...absoluteFill
+})
+
+export const tile = style({
+    position: 'absolute',
+    backgroundColor: '#fff',
+    ...frameShadow
+})
