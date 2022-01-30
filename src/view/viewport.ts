@@ -38,8 +38,9 @@ export class Viewport extends tuff.parts.Part<Project> {
         this.viewportToPlane = geom.identityMatrix()
             .translate(-bounds.xmin, -bounds.ymin)
         
-        
         const parts = this.tileParts
+        const gridSize = this.state.planeGridSize
+
         parent.div(styles.plane, plane => {       
             this.state.each("tile", tile => {
                 if (!parts[tile.id]) {
@@ -56,7 +57,12 @@ export class Viewport extends tuff.parts.Part<Project> {
                     height: `${tileBox.ymax-tileBox.ymin}px`
                 })
             })
-        }).css({width: `${size.x}px`, height: `${size.y}px`})
+        }).css({
+            width: `${size.x}px`, 
+            height: `${size.y}px`,
+            backgroundSize: `${gridSize}px ${gridSize}px`,
+            backgroundPosition: `${-gridSize/2}px ${-gridSize/2}px`
+        })
 
     }
 

@@ -44,4 +44,11 @@ export default class Project extends Model<Tile> {
         return box
     }
 
+
+    /**
+     * The size of the dot grid on the backing plane.
+     */
+    planeGridSize: number = 25
+
+
 }

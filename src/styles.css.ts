@@ -2,7 +2,7 @@ import { globalStyle, style } from '@vanilla-extract/css'
 
 /// Mixins
 
- const scalePush = {
+const scalePush = {
     ':hover': {
         transform: 'scale(1.04)'
     },
@@ -20,7 +20,7 @@ const absoluteFill = {
 } as const
 
 const frameShadow = {
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
 }
 // const insetShadow = {
 //     boxShadow: 'inset 0 1px 6px rgba(0, 0, 0, 0.1)'
@@ -36,10 +36,9 @@ const colors = {
     fg: '#222',
     bg: '#f8f8f8',
     button: '#08a',
-    output: '#e8f0ff',
     border: '#ccc',
-    preview: '#aaa',
-    contact: '#f8f8f8',
+    plane: '#f8f8f8',
+    planeGrid: '#ccc',
     pane: '#e0e0e0',
     tool: '#2d2d2d'
 }
@@ -231,7 +230,8 @@ export const viewport = style({
 })
 
 export const plane = style({
-    backgroundColor: '#f0f0f0'
+    backgroundColor: colors.plane,
+    backgroundImage: `radial-gradient(${colors.planeGrid} 1px, transparent 0)`,
 })
 
 export const tileContainer = style({
