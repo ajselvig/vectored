@@ -20,7 +20,7 @@ const absoluteFill = {
 } as const
 
 const frameShadow = {
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
 }
 // const insetShadow = {
 //     boxShadow: 'inset 0 1px 6px rgba(0, 0, 0, 0.1)'
@@ -39,7 +39,7 @@ const colors = {
     border: '#ccc',
     plane: '#f8f8f8',
     planeGrid: '#ccc',
-    pane: '#e0e0e0',
+    pane: '#f0f0f0',
     tool: '#2d2d2d'
 }
 

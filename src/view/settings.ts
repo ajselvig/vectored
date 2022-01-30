@@ -9,7 +9,6 @@ export class Settings extends tuff.parts.Part<Project> {
     
     render(parent: tuff.parts.PartTag) {
         parent.class(styles.settingsLayout)
-        parent.text('Settings')
     }
 
 }

@@ -10,7 +10,6 @@ export class Tree extends tuff.parts.Part<Project> {
     
     render(parent: tuff.parts.PartTag) {
         parent.class(styles.treeLayout)
-        parent.text('Tree')
     }
 
 }
