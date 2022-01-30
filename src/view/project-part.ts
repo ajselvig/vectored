@@ -1,26 +1,27 @@
-import { DivTag } from "tuff-core/dist/tags"
 import * as tuff from 'tuff-core'
 import Project from "../model/project"
-import { TilePart } from "./tile-part"
 import * as styles from '../styles.css'
+import { Tree } from "./tree"
+import { Settings } from "./settings"
+import { Viewport } from "./viewport"
+export class ProjectPart extends tuff.parts.Part<Project> {
 
-const {Part} = tuff.parts
+    tree!: Tree
+    viewport!: Viewport
+    settings!: Settings
 
-export class ProjectPart extends Part<Project> {
+    init() {
+        this.tree = this.makePart(Tree, this.state)
+        this.viewport = this.makePart(Viewport, this.state)
+        this.settings = this.makePart(Settings, this.state)
+    }
 
-    tileParts: {[id: string]: TilePart} = {}
+    render(parent: tuff.parts.PartTag) {
+        parent.class(styles.projectLayout)
 
-    render(parent: DivTag) {
-        parent.class(styles.viewport)
-        
-        const parts = this.tileParts
-        this.state.each("tile", tile => {
-            if (!parts[tile.id]) {
-                parts[tile.id] = this.makePart(TilePart, tile)
-            }
-            parent.part(parts[tile.id])
-        })
-
+        parent.part(this.tree)
+        parent.part(this.viewport)
+        parent.part(this.settings)
     }
     
 }

@@ -1,35 +1,8 @@
 import { globalStyle, style } from '@vanilla-extract/css'
 
-/**
- * Theme
- */
+/// Mixins
 
-const fontFamily = 'Arial, Helvetica, sans-serif'
-
-const colors = {
-    fg: '#222',
-    bg: '#f8f8f8',
-    button: '#08a',
-    output: '#e8f0ff',
-    border: '#ccc',
-    preview: '#aaa',
-    contact: '#f8f8f8'
-}
-
-const sizes = {
-    pad: 12,
-    font: 16,
-    fieldHeight: 32,
-    borderRadius: 4,
-    formWidth: 420
-}
-
-
-/** 
- * Mixins
- */
-
-const scalePush = {
+ const scalePush = {
     ':hover': {
         transform: 'scale(1.04)'
     },
@@ -49,11 +22,41 @@ const absoluteFill = {
 const frameShadow = {
     boxShadow: '0 1px 6px rgba(0, 0, 0, 0.2)'
 }
+// const insetShadow = {
+//     boxShadow: 'inset 0 1px 6px rgba(0, 0, 0, 0.1)'
+// }
 
 
-/**
- * Global
- */
+
+/// Theme
+
+const fontFamily = 'Arial, Helvetica, sans-serif'
+
+const colors = {
+    fg: '#222',
+    bg: '#f8f8f8',
+    button: '#08a',
+    output: '#e8f0ff',
+    border: '#ccc',
+    preview: '#aaa',
+    contact: '#f8f8f8',
+    pane: '#e0e0e0',
+    tool: '#2d2d2d'
+}
+
+const sizes = {
+    pad: 12,
+    font: 16,
+    fieldHeight: 32,
+    borderRadius: 4,
+    formWidth: 420,
+    projectColumnWidth: 200,
+    topBar: 48,
+    bottomBar: 24
+}
+
+
+/// Global
 
 globalStyle('html, body', {
     fontFamily: fontFamily,
@@ -75,9 +78,7 @@ globalStyle('*', {
 })
 
 
-/**
- * Links
- */
+/// Links
 
 globalStyle('a', {
     color: colors.button,
@@ -99,22 +100,7 @@ export const button = style({
 })
 
 
-/**
- * Shadows
- */
-
-// const frameShadow = {
-//     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-// }
-
-// const insetShadow = {
-//     boxShadow: 'inset 0 1px 6px rgba(0, 0, 0, 0.1)'
-// }
-
-
-/**
- * Flex
- */
+/// Flex
 
 export const flex = {
     row: style({
@@ -133,11 +119,9 @@ export const flex = {
 }
 
 
-/**
- * Inputs
- */
+/// Inputs
 
- globalStyle('input, textarea', {
+globalStyle('input, textarea', {
     fontSize: sizes.font,
     height: sizes.fieldHeight,
     padding: '6px 8px',
@@ -161,9 +145,7 @@ globalStyle('input[type=checkbox], input[type=radio]', {
 })
 
 
-/**
- * Labels
- */
+/// Labels
 
 globalStyle('label', {
     display: 'flex',
@@ -179,17 +161,88 @@ globalStyle('label input', {
 })
 
 
-/**
- * Viewport
- */
+/// Main Layout
+
+globalStyle('#app-container', {
+    position: 'fixed',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    display: 'flex'
+})
+
+export const appLayout = style({
+    display: 'flex',
+    flexDirection: 'column',
+    ...absoluteFill
+})
+
+export const projectLayout = style({
+    flex: '1 1 auto',
+    display: 'flex',
+    alignItems: 'stretch',
+    zIndex: 0
+})
+
+
+/// Top Bar
+
+export const topBar = style({
+    backgroundColor: colors.tool,
+    display: 'flex',
+    flex: `0 0 ${sizes.topBar}px`,
+    zIndex: 1,
+    ...frameShadow
+})
+
+
+/// Bottom Bar
+
+export const bottomBar = style({
+    backgroundColor: colors.tool,
+    display: 'flex',
+    flex: `0 0 ${sizes.bottomBar}px`,
+    zIndex: 1,
+    ...frameShadow
+})
+
+
+/// Tree
+
+export const treeLayout = style({
+    flex: `0 0 ${sizes.projectColumnWidth}px`,
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: colors.pane,
+    zIndex: 1,
+    ...frameShadow
+})
+
+
+/// Viewport
 
 export const viewport = style({
     backgroundColor: '#f0f0f0',
-    ...absoluteFill
+    position: 'relative',
+    flex: '1 1 auto',
+    zIndex: 0
 })
 
 export const tile = style({
     position: 'absolute',
     backgroundColor: '#fff',
+    ...frameShadow
+})
+
+
+/// Settings
+
+export const settingsLayout = style({
+    flex: `0 0 ${sizes.projectColumnWidth}px`,
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: colors.pane,
+    zIndex: 1,
     ...frameShadow
 })
