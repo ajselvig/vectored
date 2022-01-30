@@ -16,7 +16,7 @@ export class AppPart extends tuff.parts.Part<{}> {
         const project = new Project()
         project.makeTile(0, 0, 100, 100)
         project.makeTile(200, 0, 300, 100)
-        project.makeTile(0, 200, 300, 300)
+        project.makeTile(0, 200, 300, 400)
         this.projectPart = this.makePart(ProjectPart, project)
 
         this.topBar = this.makeStatelessPart(TopBar)

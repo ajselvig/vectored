@@ -33,4 +33,15 @@ export default class Project extends Model<Tile> {
         return this.items[id] as any as T
     }
 
+    /**
+     * @returns the bounding box of all tiles in the project
+     */
+    get boundingBox(): Flatten.Box {
+        let box = new Flatten.Box()
+        this.each("tile", tile => {
+            box = box.merge(tile.box)
+        })
+        return box
+    }
+
 }

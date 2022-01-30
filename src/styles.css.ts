@@ -20,7 +20,7 @@ const absoluteFill = {
 } as const
 
 const frameShadow = {
-    boxShadow: '0 1px 6px rgba(0, 0, 0, 0.2)'
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
 }
 // const insetShadow = {
 //     boxShadow: 'inset 0 1px 6px rgba(0, 0, 0, 0.1)'
@@ -182,6 +182,7 @@ export const projectLayout = style({
     flex: '1 1 auto',
     display: 'flex',
     alignItems: 'stretch',
+    minHeight: 0,
     zIndex: 0
 })
 
@@ -223,16 +224,33 @@ export const treeLayout = style({
 /// Viewport
 
 export const viewport = style({
-    backgroundColor: '#f0f0f0',
     position: 'relative',
     flex: '1 1 auto',
-    zIndex: 0
+    zIndex: 0,
+    overflow: 'scroll'
 })
 
-export const tile = style({
+export const plane = style({
+    backgroundColor: '#f0f0f0'
+})
+
+export const tileContainer = style({
     position: 'absolute',
     backgroundColor: '#fff',
     ...frameShadow
+})
+
+export const tile = style({
+    ...absoluteFill
+})
+
+export const tileLabel = style({
+    position: 'absolute',
+    fontSize: 12,
+    padding: 2,
+    lineHeight: 1,
+    top: -16,
+    left: 0
 })
 
 
