@@ -42,26 +42,27 @@ export default class Path extends ProjectModel<never> {
 /**
  * Parses a raw SVG path definition string into a PathDef object.
  * @param d an SVG path definition string
- * @returns a PathDef with vertices based on the raw definition string
+ * @returns a `PathDef` with vertices based on the raw definition string
  */
 export function dToPathDef(d: string): PathDef {
     let vertex: Vertex = {
         point: vec.origin(),
         type: "point"
     }
+    let lastType: VertexType = "point" // keep track of this to know how to infer the type of the next one
     let def: PathDef = {vertices: [], openOrClosed: "open"}
-    let comps = d.trim().matchAll(/([A-Za-z])([\-\s\d\.,]*)/g)
+    let comps = d.trim().matchAll(/([A-Za-z])([\-\s\d\.,]*)/g) // split by command
 
     // pushes the current vertex onto the stack and starts a new one
-    function finishVertex() {
+    function finishVertex(nextCommand: 'L' | 'C' | undefined = undefined) {
         if (vertex.out) { 
             if (vertex.in) {
                 // infer the type based on the control points
-                if (vec.areMirrors(vertex.in, vertex.out)) {
+                if (vec.isMirror(vertex.in, vertex.out)) {
                     // the control points are mirrors with equal lengths
                     vertex.type = "symmetric"
                 }
-                else if (vec.areMirrors(vec.norm(vertex.in), vec.norm(vertex.out))) {
+                else if (vec.isMirror(vec.norm(vertex.in), vec.norm(vertex.out))) {
                     // the control points are mirrors with different lengths
                     vertex.type = "asymmetric"
                 }
@@ -70,13 +71,30 @@ export function dToPathDef(d: string): PathDef {
                     vertex.type = "disjoint"
                 }
             }
-            else { // default to symmetric if there's no in control point
+            else { // no in control point
+                if (def.vertices.length == 0) { 
+                    // this is the first vertex, assume it's symmetric
+                    vertex.type = "symmetric"
+                    // and compute the in control
+                    vertex.in = vec.mirror(vertex.out)
+                }
+                else {
+                    // the last vertex must be a point, so this is disjoint
+                    vertex.type = "disjoint"
+                }
+            }
+        }
+        else if (vertex.in) { // in but no out control point
+            if (nextCommand == 'L') {
+                // the next command is a line, so this must be disjoint
+                vertex.type = "disjoint"
+            }
+            else {
+                // this is probably the last vertex, assume it's symmetric
                 vertex.type = "symmetric"
             }
         }
-        else if (vertex.in) { //default to symmetric if there's no out control point
-            vertex.type = "symmetric"
-        }
+        lastType = vertex.type
         def.vertices.push(vertex)
         vertex = {
             point: vec.dup(vertex.point),
@@ -93,7 +111,6 @@ export function dToPathDef(d: string): PathDef {
             return [...pair.trim().matchAll(/\-*\d+\.*\d*/g)].map(v => {return parseFloat(v[0])})
         })
 
-        console.log(`comp ${command} ${values.join(' ')}`)
         switch (command) {
             case 'M':
             case 'm':
@@ -106,7 +123,7 @@ export function dToPathDef(d: string): PathDef {
             case 'L':
             case 'l':
                 assert(values.length == 1, `Line command must specify one point, not ${values.length}`)
-                finishVertex()
+                finishVertex('L')
                 vertex.point = command=='L' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
                 break
             case 'C':
@@ -117,7 +134,7 @@ export function dToPathDef(d: string): PathDef {
                 const absIn = command=='C' ? vec.make(values[1]) : vec.add(vertex.point, vec.make(values[1]))
                 const nextPoint = command=='C' ? vec.make(values[2]) : vec.add(vertex.point, vec.make(values[2]))
                 const nextIn = vec.make(absIn.x - nextPoint.x, absIn.y - nextPoint.y)
-                finishVertex()
+                finishVertex('C')
                 vertex.point = nextPoint
                 vertex.in = nextIn
                 break

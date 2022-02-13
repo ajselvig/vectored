@@ -72,6 +72,13 @@ export const norm = (v: Type): Type => {
 }
 
 /**
+ * @returns the mirror of `v` about the origin.
+ */
+export const mirror = (v: Type): Type => {
+    return {x: -v.x, y: -v.y}
+}
+
+/**
  * Coordinates within this ratio of each other are considered the same (or mirrored).
  */
  export const EpsilonRatio = 0.0001
@@ -79,7 +86,7 @@ export const norm = (v: Type): Type => {
  /**
   * @returns `true` if `v1` and `v2` are the opposite of each other (within `EpsilonRatio`).
   */
- export const areMirrors = (v1: Type, v2: Type): boolean => {
+ export const isMirror = (v1: Type, v2: Type): boolean => {
      const len1 = len(v1)
      const len2 = len(v2)
      const maxLen = Math.max(len1, len2)
