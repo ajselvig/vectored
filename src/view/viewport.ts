@@ -25,7 +25,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         const xSpan = Math.min(xSpanTiles*4, 1000)
         const ySpan = Math.min(ySpanTiles*4, 1000)
         const tileCenter = tilesBox.center
-        const bounds = geom.box(
+        const bounds = geom.b(
             tileCenter.x - xSpan/2,
             tileCenter.y - ySpan/2,
             tileCenter.x + xSpan/2,

@@ -9,7 +9,7 @@ type Box = Flatten.Box
 
 export default class Tile extends ProjectModel<Path | Group> {
 
-    box = geom.box()
+    box = geom.b()
 
     constructor(readonly project: Project, id?: string|null, box?: Box) {
         super('tile', project, id)
@@ -19,7 +19,7 @@ export default class Tile extends ProjectModel<Path | Group> {
     }
 
     place(xmin: number, ymin: number, xmax: number, ymax: number) {
-        this.box = geom.box(xmin, ymin, xmax, ymax)   
+        this.box = geom.b(xmin, ymin, xmax, ymax)   
     }
 
     get left(): number {

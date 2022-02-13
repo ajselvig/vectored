@@ -3,20 +3,21 @@ import Flatten from '@flatten-js/core'
 type RawPoint = [number, number]
 
 
+
 /// Point Helpers
 
 export type Point = Flatten.Point
 
-export const point = Flatten.point
+export const p = Flatten.point
 
 /**
  * Creates a +Point+ object from an array of its x and y values.
  * @param numbers an array of numbers (should be 2 of them)
  * @returns a +Point+ object
  */
-export const arrayToPoint = (numbers: number[]): Point => {
+export const a2p = (numbers: number[]): Point => {
     if (numbers.length == 2) {
-        return point(numbers[0], numbers[1])
+        return p(numbers[0], numbers[1])
     }
     throw `Point arrays must have exactly two entries, not ${numbers.length}`
 }
@@ -26,16 +27,16 @@ export const arrayToPoint = (numbers: number[]): Point => {
 
 export type Vector = Flatten.Vector
 
-export const vector = Flatten.vector
+export const v = Flatten.vector
 
 /**
  * Creates a +Point+ object from an array of its x and y values.
  * @param numbers an array of numbers (should be 2 of them)
  * @returns a +Point+ object
  */
-export const arrayToVector = (numbers: number[]): Vector => {
+export const a2v = (numbers: number[]): Vector => {
     if (numbers.length == 2) {
-        return vector(numbers[0], numbers[1])
+        return v(numbers[0], numbers[1])
     }
     throw `Vector arrays must have exactly two entries, not ${numbers.length}`
 }
@@ -43,7 +44,7 @@ export const arrayToVector = (numbers: number[]): Vector => {
 
 // Box Helpers
 
-export const box = (xmin?: number, ymin?: number, xmax?: number, ymax?: number): Flatten.Box => {
+export const b = (xmin?: number, ymin?: number, xmax?: number, ymax?: number): Flatten.Box => {
     return new Flatten.Box(xmin, ymin, xmax, ymax)
 }
 
