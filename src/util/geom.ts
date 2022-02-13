@@ -9,12 +9,36 @@ export type Point = Flatten.Point
 
 export const point = Flatten.point
 
+/**
+ * Creates a +Point+ object from an array of its x and y values.
+ * @param numbers an array of numbers (should be 2 of them)
+ * @returns a +Point+ object
+ */
+export const arrayToPoint = (numbers: number[]): Point => {
+    if (numbers.length == 2) {
+        return point(numbers[0], numbers[1])
+    }
+    throw `Point arrays must have exactly two entries, not ${numbers.length}`
+}
+
 
 /// Vector Helpers
 
 export type Vector = Flatten.Vector
 
 export const vector = Flatten.vector
+
+/**
+ * Creates a +Point+ object from an array of its x and y values.
+ * @param numbers an array of numbers (should be 2 of them)
+ * @returns a +Point+ object
+ */
+export const arrayToVector = (numbers: number[]): Vector => {
+    if (numbers.length == 2) {
+        return vector(numbers[0], numbers[1])
+    }
+    throw `Vector arrays must have exactly two entries, not ${numbers.length}`
+}
 
 
 // Box Helpers
