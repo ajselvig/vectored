@@ -2,6 +2,7 @@ import * as styles from '../styles.css'
 import Project from "../model/project"
 import * as tuff from 'tuff-core'
 import { TilePart } from "./tile-part"
+import * as box from '../geom/box'
 import * as geom from '../util/geom'
 
 const log = new tuff.logging.Logger("Viewport")
@@ -18,25 +19,22 @@ export class Viewport extends tuff.parts.Part<Project> {
 
         // compute the plane size based on the bounding box of the tiles
         const tilesBox = this.state.boundingBox
-        const xSpanTiles = tilesBox.xmax - tilesBox.xmin
-        const ySpanTiles = tilesBox.ymax - tilesBox.ymin
         // compute larger spans so that there's room to scroll,
         // with a minimum for small projects
-        const xSpan = Math.min(xSpanTiles*4, 1000)
-        const ySpan = Math.min(ySpanTiles*4, 1000)
-        const tileCenter = tilesBox.center
-        const bounds = geom.b(
+        const xSpan = Math.min(tilesBox.width*4, 1000)
+        const ySpan = Math.min(tilesBox.height*4, 1000)
+        const tileCenter = box.center(tilesBox)
+        const bounds = box.make(
             tileCenter.x - xSpan/2,
             tileCenter.y - ySpan/2,
-            tileCenter.x + xSpan/2,
-            tileCenter.y + ySpan/2
+            xSpan,
+            ySpan
         )
         log.info("Bounds:", bounds)
-        const size = geom.boxSize(bounds)
 
         // compute a transform from viewport to plane space
         this.viewportToPlane = geom.identityMatrix()
-            .translate(-bounds.xmin, -bounds.ymin)
+            .translate(-bounds.x, -bounds.y)
         
         const parts = this.tileParts
         const gridSize = this.state.planeGridSize
@@ -47,19 +45,19 @@ export class Viewport extends tuff.parts.Part<Project> {
                     parts[tile.id] = this.makePart(TilePart, tile)
                 }
                 // make a container for the tile at the correct size and position
-                const tileBox = geom.transformBox(tile.box, this.viewportToPlane)
+                const tileBox = geom.transformBox(tile.bounds, this.viewportToPlane)
                 plane.div(styles.tileContainer, tileContainer => {
                     tileContainer.part(parts[tile.id])
                 }).css({
-                    left: `${tileBox.xmin}px`, 
-                    top: `${tileBox.ymin}px`,
-                    width: `${tileBox.xmax-tileBox.xmin}px`,
-                    height: `${tileBox.ymax-tileBox.ymin}px`
+                    left: `${tileBox.x}px`, 
+                    top: `${tileBox.y}px`,
+                    width: `${tileBox.width}px`,
+                    height: `${tileBox.height}px`
                 })
             })
         }).css({
-            width: `${size.x}px`, 
-            height: `${size.y}px`,
+            width: `${bounds.width}px`, 
+            height: `${bounds.height}px`,
             backgroundSize: `${gridSize}px ${gridSize}px`,
             backgroundPosition: `${-gridSize/2}px ${-gridSize/2}px`
         })

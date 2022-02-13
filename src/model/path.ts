@@ -1,4 +1,3 @@
-
 import { ProjectModel } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
@@ -12,9 +11,9 @@ export type VertexType = 'point' | 'symmetric' | 'asymmetric' | 'disjoint'
  */
 export type Vertex = {
     type: VertexType
-    point: vec.Type
-    out?: vec.Type
-    in?: vec.Type
+    point: vec.Vec
+    out?: vec.Vec
+    in?: vec.Vec
 }
 
 
@@ -49,7 +48,6 @@ export function dToPathDef(d: string): PathDef {
         point: vec.origin(),
         type: "point"
     }
-    let lastType: VertexType = "point" // keep track of this to know how to infer the type of the next one
     let def: PathDef = {vertices: [], openOrClosed: "open"}
     let comps = d.trim().matchAll(/([A-Za-z])([\-\s\d\.,]*)/g) // split by command
 
@@ -94,7 +92,6 @@ export function dToPathDef(d: string): PathDef {
                 vertex.type = "symmetric"
             }
         }
-        lastType = vertex.type
         def.vertices.push(vertex)
         vertex = {
             point: vec.dup(vertex.point),

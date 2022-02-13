@@ -1,4 +1,4 @@
-import Flatten from '@flatten-js/core'
+import * as box from '../geom/box'
 import Model, { IModel } from './model'
 import Tile from './tile'
 
@@ -10,8 +10,8 @@ export default class Project extends Model<Tile> {
         this.items = {}
     }
 
-    makeTile(xmin: number, ymin: number, xmax: number, ymax: number): Tile {
-        const tile = new Tile(this, undefined, new Flatten.Box(xmin, ymin, xmax, ymax))
+    makeTile(x: number, y: number, width: number, height: number): Tile {
+        const tile = new Tile(this, undefined, box.make(x, y, width, height))
         this.add(tile)
         return tile
     }
@@ -36,12 +36,17 @@ export default class Project extends Model<Tile> {
     /**
      * @returns the bounding box of all tiles in the project
      */
-    get boundingBox(): Flatten.Box {
-        let box = new Flatten.Box()
+    get boundingBox(): box.Box {
+        let b: box.Box|undefined = undefined
         this.each("tile", tile => {
-            box = box.merge(tile.box)
+            if (b) {
+                b = box.union(b, tile.bounds)
+            }
+            else {
+                b = tile.bounds
+            }
         })
-        return box
+        return b!
     }
 
 

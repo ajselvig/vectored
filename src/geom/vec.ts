@@ -1,7 +1,7 @@
 /**
  * Immutable 2D vector, the only kind.
  */
-export type Type = {
+export type Vec = {
     readonly x: number
     readonly y: number
 }
@@ -9,9 +9,9 @@ export type Type = {
 /**
  * Makes a new vector from raw x/y values.
  */
-export function make(x: number, y: number): Type
-export function make(xy: Array<number>): Type
-export function make(xxy: number | Array<number>, y?: number): Type {
+export function make(x: number, y: number): Vec
+export function make(xy: Array<number>): Vec
+export function make(xxy: number | Array<number>, y?: number): Vec {
     if (Array.isArray(xxy)) {
         if (xxy.length == 2) {
             return {x: xxy[0], y: xxy[1]}
@@ -24,49 +24,49 @@ export function make(xxy: number | Array<number>, y?: number): Type {
 /**
  * @returns a duplicate of `v`
  */
-export const dup = (v: Type): Type => {
+export const dup = (v: Vec): Vec => {
     return {... v}
 }
 
 /**
  * @returns a new origin vector
  */
-export const origin = (): Type => {
+export const origin = (): Vec => {
     return {x: 0, y: 0}
 }
 
 /**
  * @returns `v1` + `v2`
  */
-export const add = (v1: Type, v2: Type): Type => {
+export const add = (v1: Vec, v2: Vec): Vec => {
     return {x: v1.x + v2.x, y: v1.y + v2.y}
 }
 
 /**
  * @returns `v1` - `v2`
  */
-export const subtract = (v1: Type, v2: Type): Type => {
+export const subtract = (v1: Vec, v2: Vec): Vec => {
     return {x: v1.x - v2.x, y: v1.y - v2.y}
 }
 
 /**
  * @returns the dot product of `v1` and `v2`
  */
-export const dot = (v1: Type, v2: Type): number => {
+export const dot = (v1: Vec, v2: Vec): number => {
     return v1.x*v2.x + v1.y*v2.y
 }
 
 /**
  * @returns the length of a vector.
  */
-export const len = (v: Type): number => {
+export const len = (v: Vec): number => {
     return Math.sqrt(dot(v, v))
 }
 
 /**
  * @returns a normalized (length=1) version of the vector.
  */
-export const norm = (v: Type): Type => {
+export const norm = (v: Vec): Vec => {
     const l = len(v)
     return {x: v.x/l, y: v.y/l}
 }
@@ -74,7 +74,7 @@ export const norm = (v: Type): Type => {
 /**
  * @returns the mirror of `v` about the origin.
  */
-export const mirror = (v: Type): Type => {
+export const mirror = (v: Vec): Vec => {
     return {x: -v.x, y: -v.y}
 }
 
@@ -86,7 +86,7 @@ export const mirror = (v: Type): Type => {
  /**
   * @returns `true` if `v1` and `v2` are the opposite of each other (within `EpsilonRatio`).
   */
- export const isMirror = (v1: Type, v2: Type): boolean => {
+ export const isMirror = (v1: Vec, v2: Vec): boolean => {
      const len1 = len(v1)
      const len2 = len(v2)
      const maxLen = Math.max(len1, len2)
