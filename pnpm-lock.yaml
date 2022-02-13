@@ -5,7 +5,7 @@ specifiers:
   '@types/uuid': ^8.3.4
   '@vanilla-extract/css': ^1.6.8
   '@vanilla-extract/vite-plugin': ^3.1.2
-  tuff-core: ^0.1.10
+  tuff-core: ^0.2.5
   typescript: ^4.4.4
   uuid: ^8.3.2
   vite: ^2.7.2
@@ -15,7 +15,7 @@ dependencies:
   '@types/uuid': 8.3.4
   '@vanilla-extract/css': 1.6.8
   '@vanilla-extract/vite-plugin': 3.1.2_vite@2.7.12
-  tuff-core: 0.1.10
+  tuff-core: 0.2.5
   uuid: 8.3.2
 
 devDependencies:
@@ -468,8 +468,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /tuff-core/0.1.10:
-    resolution: {integrity: sha512-qJDPnMIZKTdL+EAPhfI/aJWg9vcstWgIZK+e7dy3UizY9wpjDqQb3p5ViV/0PjCNsFFfPMKPv5n0U6qj5Kp3Xw==}
+  /tuff-core/0.2.5:
+    resolution: {integrity: sha512-rUtJbZQyuC8e+r9lc6FTLaixFg8djqFWyvBynNNM+2oETzAh59cX6X1lClQlTU+k+XpM8So4DLuEvGDLYEQ78A==}
     dev: false
 
   /typescript/4.5.4:
