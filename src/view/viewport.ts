@@ -3,13 +3,14 @@ import Project from "../model/project"
 import * as tuff from 'tuff-core'
 import { TilePart } from "./tile-part"
 import * as box from '../geom/box'
-import * as geom from '../util/geom'
+import * as mat from '../geom/mat'
+import * as vec from '../geom/vec'
 
 const log = new tuff.logging.Logger("Viewport")
 export class Viewport extends tuff.parts.Part<Project> {
     tileParts: {[id: string]: TilePart} = {}
 
-    viewportToPlane = geom.identityMatrix()
+    viewportToPlane = mat.identity()
 
     init() {
     }
@@ -33,8 +34,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         log.info("Bounds:", bounds)
 
         // compute a transform from viewport to plane space
-        this.viewportToPlane = geom.identityMatrix()
-            .translate(-bounds.x, -bounds.y)
+        this.viewportToPlane = mat.translate(mat.identity(), vec.make(-bounds.x, -bounds.y))
         
         const parts = this.tileParts
         const gridSize = this.state.planeGridSize
@@ -45,7 +45,7 @@ export class Viewport extends tuff.parts.Part<Project> {
                     parts[tile.id] = this.makePart(TilePart, tile)
                 }
                 // make a container for the tile at the correct size and position
-                const tileBox = geom.transformBox(tile.bounds, this.viewportToPlane)
+                const tileBox = mat.transformBox(this.viewportToPlane, tile.bounds)
                 plane.div(styles.tileContainer, tileContainer => {
                     tileContainer.part(parts[tile.id])
                 }).css({

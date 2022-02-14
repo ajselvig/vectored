@@ -22,6 +22,13 @@ export function make(xxy: number | Array<number>, y?: number): Vec {
 }
 
 /**
+ * @returns a new identity vector.
+ */
+export const identity = (): Vec => {
+    return {x: 0, y: 0}
+}
+
+/**
  * @returns a duplicate of `v`
  */
 export const dup = (v: Vec): Vec => {
