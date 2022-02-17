@@ -43,6 +43,13 @@ export const origin = (): Vec => {
 }
 
 /**
+ * @returns the coordinates joined by `delimeter`.
+ */
+export const print = (v: Vec, delimeter: string = ','): string => {
+    return [v.x, v.y].join(delimeter)
+}
+
+/**
  * @returns `v1` + `v2`
  */
 export const add = (v1: Vec, v2: Vec): Vec => {

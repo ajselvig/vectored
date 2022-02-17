@@ -16,9 +16,14 @@ export type Vertex = {
     in?: vec.Vec
 }
 
-
+/**
+ * Whether a path is open or closed.
+ */
 export type OpenOrClosed = 'open' | 'closed'
 
+/**
+ * Internal representation of paths.
+ */
 export type PathDef = {
     vertices: Vertex[]
     openOrClosed: OpenOrClosed
@@ -43,7 +48,7 @@ export default class Path extends ProjectModel<never> {
  * @param d an SVG path definition string
  * @returns a `PathDef` with vertices based on the raw definition string
  */
-export function dToPathDef(d: string): PathDef {
+export function d2PathDef(d: string): PathDef {
     let vertex: Vertex = {
         point: vec.origin(),
         type: "point"
@@ -141,4 +146,46 @@ export function dToPathDef(d: string): PathDef {
     }
     finishVertex()
     return def
+}
+
+
+
+/**
+ * Converts an internal path definition into an svg d string.
+ * @param def a path definition in internal representation
+ * @returns an SVG path d string
+ */
+export function pathDef2d(def: PathDef): string {
+    const comps: string[] = []
+    if (!def.vertices.length) {
+        return "" // maybe we should raise here?
+    }
+
+    // a convenience functino to push commands to the stack
+    function command(char: string, ...vecs: vec.Vec[]) {
+        comps.push(`${char} ` + vecs.map(v => {return `${v.x} ${v.y}`}).join(', '))
+    }
+
+    // move to the first vertex
+    const v0 = def.vertices[0]
+    if (v0.point.x || v0.point.y) {
+        command('M', v0.point)
+    }
+
+    // iterate over each pair of vertices
+    for (let i=0; i<def.vertices.length-1; i++) {
+        const v1 = def.vertices[i]
+        const v2 = def.vertices[i+1]
+        if (!v1.out && !v2.in) {
+            // no control points in between the vertices, must be a line
+            command('L', v2.point)
+        }
+    }
+
+    // close the path
+    if (def.openOrClosed == 'closed') {
+        comps.push('Z')
+    }
+
+    return comps.join(' ')
 }
