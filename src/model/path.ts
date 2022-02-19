@@ -190,8 +190,6 @@ export function pathDef2d(def: PathDef): string {
         comps.push(`${char} ` + vecs.map(v => {return `${v.x} ${v.y}`}).join(', '))
     }
 
-
-
     // move to the first vertex
     const v0 = def.vertices[0]
     if (v0.point.x || v0.point.y) {
@@ -205,6 +203,12 @@ export function pathDef2d(def: PathDef): string {
         if (!v1.out && !v2.in) {
             // no control points in between the vertices, must be a line
             command('L', v2.point)
+        }
+        else {
+            // at least one control point, must be a curve
+            const c1 = vec.add(v1.out || vec.origin(), v1.point)
+            const c2 = vec.add(v2.in || vec.origin(), v2.point)
+            command('C', c1, c2, v2.point)
         }
     }
 
