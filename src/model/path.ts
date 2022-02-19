@@ -17,6 +17,16 @@ export type Vertex = {
 }
 
 /**
+ * @returns a nicely formatted string with the format "(in)->[point]->(out) type"
+ */
+export function printVertex(v: Vertex): string {
+    let s = vec.print(v.point)
+    const inString = v.in ? vec.print(v.in) : ''
+    const outString = v.out ? vec.print(v.out) : ''
+    return `(${inString})->[${s}]->(${outString}) ${v.type}`
+}
+
+/**
  * Whether a path is open or closed.
  */
 export type OpenOrClosed = 'open' | 'closed'
@@ -27,6 +37,19 @@ export type OpenOrClosed = 'open' | 'closed'
 export type PathDef = {
     vertices: Vertex[]
     openOrClosed: OpenOrClosed
+}
+
+/**
+ * @returns a nicely formatted string for the {PathDef}.
+ */
+export function printPathDef(def: PathDef): string {
+    const lines = ['{']
+    for (let v of def.vertices) {
+        lines.push(`  ${printVertex(v)}`)
+    }
+    lines.push(`  ${def.openOrClosed}`)
+    lines.push('}')
+    return lines.join("\n")
 }
 
 /**
@@ -95,6 +118,7 @@ export function d2PathDef(d: string): PathDef {
             else {
                 // this is probably the last vertex, assume it's symmetric
                 vertex.type = "symmetric"
+                vertex.out = vec.mirror(vertex.in)
             }
         }
         def.vertices.push(vertex)
@@ -161,10 +185,12 @@ export function pathDef2d(def: PathDef): string {
         return "" // maybe we should raise here?
     }
 
-    // a convenience functino to push commands to the stack
+    // a convenience function to push commands to the stack
     function command(char: string, ...vecs: vec.Vec[]) {
         comps.push(`${char} ` + vecs.map(v => {return `${v.x} ${v.y}`}).join(', '))
     }
+
+
 
     // move to the first vertex
     const v0 = def.vertices[0]
