@@ -6,6 +6,6 @@ import Project from "./project"
 export default class Group extends ProjectModel<Path> {
     
     constructor(readonly project: Project, id?: string|null) {
-        super('project', project, id)
+        super('group', project, id)
     }
 }

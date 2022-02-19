@@ -40,7 +40,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         const gridSize = this.state.planeGridSize
 
         parent.div(styles.plane, plane => {       
-            this.state.each("tile", tile => {
+            this.state.eachOfType("tile", tile => {
                 if (!parts[tile.id]) {
                     parts[tile.id] = this.makePart(TilePart, tile)
                 }

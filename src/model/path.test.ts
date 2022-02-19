@@ -10,7 +10,7 @@ function printDefs(d: string, def: PathDef) {
 }
 
 test("d line parsing", () => {
-    let d = "M 1 2.5 L 3.5 4 l 2 -2 Z"
+    let d = "M 1,2.5 L 3.5,4 l 2,-2 Z"
     let def = d2PathDef(d)
     printDefs(d, def)
     expect(def.openOrClosed).eq('closed')
@@ -20,7 +20,7 @@ test("d line parsing", () => {
     expect(def.vertices[2].point).toMatchObject({x: 5.5, y: 2})
 
     // re-generate the d - can't include relative components
-    d = "M 0 1.5 L 1 1.5 L 1 0 Z"
+    d = "M 0,1.5 L 1,1.5 L 1,0 Z"
     def = d2PathDef(d)
     printDefs(d, def)
     expect(pathDef2d(def)).eq(d)
@@ -28,7 +28,7 @@ test("d line parsing", () => {
 
 test("d curve parsing", () => {
     // single curve with default symmetric vertices
-    let d = "C 0 1, 2 1, 2 0"
+    let d = "C 0,1 2,1 2,0"
     let def = d2PathDef(d)
     printDefs(d, def)
     expect(def.openOrClosed).eq('open')
@@ -46,7 +46,7 @@ test("d curve parsing", () => {
     expect(pathDef2d(def)).eq(d) // re-generate the d
 
     // three curves with asymmetric and explicitly symmetric vertices
-    d = "C 0 2, 1 4, 3 4 C 6 4, 6 2, 6 0 C 6 -2, 5 -3, 3 -3"
+    d = "C 0,2 1,4 3,4 C 6,4 6,2 6,0 C 6,-2 5,-3 3,-3"
     def = d2PathDef(d)
     printDefs(d, def)
     expect(def.vertices.length).eq(4)
@@ -57,7 +57,7 @@ test("d curve parsing", () => {
     expect(pathDef2d(def)).eq(d)
 
     // a line followed by a curve should produce a disjoint vertex with no in control point
-    d = "L 0 1 C 1 2, 2 2, 3 1"
+    d = "L 0,1 C 1,2 2,2 3,1"
     def = d2PathDef(d)
     printDefs(d, def)
     expect(def.vertices.length).eq(3)
@@ -68,7 +68,7 @@ test("d curve parsing", () => {
     expect(pathDef2d(def)).eq(d)
 
     // a curve followed by a line should produce a disjoint vertex with no in control point
-    d = "C 0 1, 1 1, 1 0 L 2 0"
+    d = "C 0,1 1,1 1,0 L 2,0"
     def = d2PathDef(d)
     printDefs(d, def)
     expect(def.vertices.length).eq(3)

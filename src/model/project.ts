@@ -38,7 +38,7 @@ export default class Project extends Model<Tile> {
      */
     get boundingBox(): box.Box {
         let b: box.Box|undefined = undefined
-        this.each("tile", tile => {
+        this.eachOfType("tile", tile => {
             if (b) {
                 b = box.union(b, tile.bounds)
             }

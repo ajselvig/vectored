@@ -12,33 +12,43 @@ function generateId(): string {
     return uuidv4()
 }
 
-// const ModelTypeMap = {
-//     project: Project,
-//     tile: Tile,
-//     group: Group,
-//     path: Path
-// }
-// export type ModelTypeName = keyof typeof ModelTypeMap
-
-// export const ModelTypeNames = ["project", "tile", "group", "path"] as const
-// export type ModelTypeName = typeof ModelTypeNames[number]
+/**
+ * Maps model names to their classes.
+ */
 interface ModelTypeMap {
     project: Project,
     tile: Tile,
     group: Group,
     path: Path
 }
+
+/**
+ * String values that can be used to identify a model class.
+ */
 export type ModelTypeName = keyof ModelTypeMap
 
-export type IModel = {
+/**
+ * Untyped interface for models.
+ */
+export interface IModel {
     readonly id: string
     readonly type: ModelTypeName
     name: string
     project: Project
+    add(child: IModel): void
+    get(index: number): IModel | null
+    count: number
 }
 
+/**
+ * Keep track of how many of each element have been created.
+ */
 const counters: {[type: string]: number} = {}
 
+/**
+ * @returns the next number for the given model type
+ * Used for generating default names for new elements.
+ */
 function nextCount(type: ModelTypeName): number {
     if (!counters[type]) {
         counters[type] = 0
@@ -55,7 +65,7 @@ export default abstract class Model<ChildType extends IModel> {
 
     readonly id: string
     name: string
-    readonly children: ModelMap<ChildType>
+    readonly children: Array<ChildType>
     abstract readonly project: Project
 
     constructor(readonly type: ModelTypeName, id?: string|null) {
@@ -68,18 +78,22 @@ export default abstract class Model<ChildType extends IModel> {
         const num = nextCount(type)
         this.name = `${this.type} ${num}`
         log.info(`New ${this.name}`)
-        this.children = {}
+        this.children = []
     }
 
-    get<T extends ChildType>(id: string): T {
-        return this.children[id] as T
+    get count(): number {
+        return Object.entries(this.children).length
+    }
+
+    get<T extends ChildType>(index: number): T {
+        return this.children[index] as T
     }
 
     add<T extends ChildType>(child: T) {
-        this.children[child.id] = child
+        this.children.push(child)
     }
 
-    each<T extends ChildType>(type: ModelTypeName, fn: (child: T) => any) {
+    eachOfType<T extends ChildType>(type: ModelTypeName, fn: (child: T) => any) {
         for (let [_, child] of Object.entries(this.children)) {
             if (child.type == type) {
                 fn(child as T)

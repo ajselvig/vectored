@@ -2,6 +2,9 @@ import { ProjectModel } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
 import { assert } from 'vitest'
+import * as tuff from 'tuff-core'
+
+const log = new tuff.logging.Logger("Path")
 
 
 export type VertexType = 'point' | 'symmetric' | 'asymmetric' | 'disjoint'
@@ -133,14 +136,15 @@ export function d2PathDef(d: string): PathDef {
         const rawValues = (comp[2] || '').trim()
         
         // an array of arrays of numbers for each point
-        const values = rawValues.split(',').map(pair => {
+        log.debug("Parsing raw comp", rawValues)
+        const values = rawValues.split(/\s+/g).map(pair => {
             return [...pair.trim().matchAll(/\-*\d+\.*\d*/g)].map(v => {return parseFloat(v[0])})
         })
 
         switch (command) {
             case 'M':
             case 'm':
-                assert(values.length == 1, `Move command must specify one point, not ${values.length}`)
+                assert(values.length == 1, `Move command must specify one point, not ${values.length}: ${values}`)
                 vertex.point = command=='M' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
                 break
             case 'Z':
@@ -187,7 +191,7 @@ export function pathDef2d(def: PathDef): string {
 
     // a convenience function to push commands to the stack
     function command(char: string, ...vecs: vec.Vec[]) {
-        comps.push(`${char} ` + vecs.map(v => {return `${v.x} ${v.y}`}).join(', '))
+        comps.push(`${char} ` + vecs.map(v => {return `${v.x},${v.y}`}).join(' '))
     }
 
     // move to the first vertex
