@@ -7,6 +7,7 @@ export class TilePart extends tuff.parts.Part<Tile> {
         parent.class(styles.tile)
         parent.div(styles.tileLabel)
             .text(this.state.name)
+        this.state.renderInHtml(parent)
     }
     
 }

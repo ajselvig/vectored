@@ -27,6 +27,8 @@ interface ModelTypeMap {
  */
 export type ModelTypeName = keyof ModelTypeMap
 
+export type ModelRenderTag = tuff.svg.SvgParentTag
+
 /**
  * Untyped interface for models.
  */
@@ -39,6 +41,7 @@ export interface IModel {
     get(index: number): IModel | null
     count: number
     def: {}
+    render(parent: ModelRenderTag): void
 }
 
 /**
@@ -93,13 +96,21 @@ export default abstract class Model<DefType extends {}, ChildType extends IModel
         this.children.push(child)
     }
 
+    each(fn: (child: IModel) => any) {
+        for (let child of this.children) {
+            fn(child)
+        }
+    }
+
     eachOfType<T extends ChildType>(type: ModelTypeName, fn: (child: T) => any) {
-        for (let [_, child] of Object.entries(this.children)) {
+        for (let child of this.children) {
             if (child.type == type) {
                 fn(child as T)
             }
         }
     }
+
+    abstract render(parent: ModelRenderTag): void
 
 }
 

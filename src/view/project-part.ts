@@ -4,6 +4,9 @@ import * as styles from '../styles.css'
 import { Tree } from "./tree"
 import { Settings } from "./settings"
 import { Viewport } from "./viewport"
+import { SvgParser } from '../io/svg-io'
+
+const log = new tuff.logging.Logger("Project Part")
 export class ProjectPart extends tuff.parts.Part<Project> {
 
     tree!: Tree
@@ -22,6 +25,18 @@ export class ProjectPart extends tuff.parts.Part<Project> {
         parent.part(this.tree)
         parent.part(this.viewport)
         parent.part(this.settings)
+    }
+
+    fetchTile(url: string) {
+        fetch(url).then(res => {
+            res.text().then(raw => {
+                log.info("Fetched svg", raw)
+                const parser = new SvgParser(raw)
+                parser.toTile(this.state)
+                this.dirty()
+            })
+            
+        })
     }
     
 }

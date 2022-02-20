@@ -3,6 +3,7 @@ import { ProjectPart } from "./project-part"
 import * as styles from '../styles.css'
 import { TopBar } from "./top-bar"
 import { BottomBar } from "./bottom-bar"
+import tsUrl from '../io/test/typescript.svg'
 
 import * as tuff from 'tuff-core'
 
@@ -14,10 +15,9 @@ export class AppPart extends tuff.parts.Part<{}> {
 
     init() {
         const project = new Project()
-        project.makeTile(0, 0, 100, 100)
-        project.makeTile(200, 0, 100, 100)
-        project.makeTile(0, 200, 300, 100)
+
         this.projectPart = this.makePart(ProjectPart, project)
+        this.projectPart.fetchTile(tsUrl)
 
         this.topBar = this.makeStatelessPart(TopBar)
         this.bottomBar = this.makeStatelessPart(BottomBar)

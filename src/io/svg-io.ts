@@ -5,11 +5,11 @@ import { IModel } from '../model/model'
 import * as box from '../geom/box'
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, points2Def, printPathDef } from '../model/path'
-import saxes from 'saxes'
+import {SaxesParser, SaxesTagPlain} from 'saxes'
 
 const log = new tuff.logging.Logger("SVG IO")
 
-type RawTag = saxes.SaxesTagPlain
+type RawTag = SaxesTagPlain
 
 /**
  * Parses a raw SVG document into a {Tile}.
@@ -52,7 +52,7 @@ export class SvgParser {
         // happy-dom does not support using DOMParser to parse XML documents:
         // https://github.com/capricorn86/happy-dom/issues/282
         // and jsdom didn't seem to work correctly either, so we're using a generic SAX parser
-        const parser = new saxes.SaxesParser()
+        const parser = new SaxesParser()
         parser.on("error", e => {
             log.warn("Error", e)
         })
@@ -95,6 +95,7 @@ export class SvgParser {
         if (!rootTile) {
             throw `No root svg element in the document!`
         }
+        project.append(rootTile)
 
         return rootTile
     }

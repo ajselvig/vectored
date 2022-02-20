@@ -1,7 +1,6 @@
-import { ProjectModel } from './model'
+import { ModelRenderTag, ProjectModel } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
-import { assert } from 'vitest'
 import * as tuff from 'tuff-core'
 
 const log = new tuff.logging.Logger("Path")
@@ -62,6 +61,11 @@ export default class Path extends ProjectModel<PathDef, never> {
 
     constructor(readonly project: Project, def: PathDef, id?: string) {
         super('path', project, def, id)
+    }
+    
+    render(parent: ModelRenderTag): void {
+        const d = pathDef2d(this.def)
+        parent.path({d: d})
     }
 }
 
@@ -162,7 +166,7 @@ export function d2PathDef(d: string): PathDef {
         switch (command) {
             case 'M':
             case 'm':
-                assert(values.length == 1, `Move command must specify one point, not ${values.length}: ${values}`)
+                // assert(values.length == 1, `Move command must specify one point, not ${values.length}: ${values}`)
                 vertex.point = command=='M' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
                 break
             case 'Z':
@@ -170,13 +174,13 @@ export function d2PathDef(d: string): PathDef {
                 break
             case 'L':
             case 'l':
-                assert(values.length == 1, `Line command must specify one point, not ${values.length}`)
+                // assert(values.length == 1, `Line command must specify one point, not ${values.length}`)
                 finishVertex('L')
                 vertex.point = command=='L' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
                 break
             case 'C':
             case 'c':
-                assert(values.length == 3, `Cubic command must specify three points, not ${values.length}: ${values.join(', ')}`)
+                // assert(values.length == 3, `Cubic command must specify three points, not ${values.length}: ${values.join(', ')}`)
                 const absOut = command=='C' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
                 vertex.out = vec.make(absOut.x - vertex.point.x, absOut.y - vertex.point.y)
                 const absIn = command=='C' ? vec.make(values[1]) : vec.add(vertex.point, vec.make(values[1]))

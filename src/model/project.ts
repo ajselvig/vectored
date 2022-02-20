@@ -1,5 +1,5 @@
 import * as box from '../geom/box'
-import Model, { IModel } from './model'
+import Model, { IModel, ModelRenderTag } from './model'
 import Tile from './tile'
 
 type ProjectDef = {}
@@ -48,7 +48,7 @@ export default class Project extends Model<ProjectDef, Tile> {
                 b = tile.def.bounds
             }
         })
-        return b!
+        return b || box.make(0, 0, 100, 100)
     }
 
 
@@ -56,6 +56,11 @@ export default class Project extends Model<ProjectDef, Tile> {
      * The size of the dot grid on the backing plane.
      */
     planeGridSize: number = 25
+    
+    // this doesn't really apply to projects
+    render(_: ModelRenderTag): void {
+        throw "Why are you trying to render a project?"
+    }
 
 
 }

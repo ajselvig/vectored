@@ -6,7 +6,7 @@ specifiers:
   '@vanilla-extract/vite-plugin': ^3.1.2
   happy-dom: ^2.39.1
   saxes: ^6.0.0
-  tuff-core: ^0.2.5
+  tuff-core: ^0.2.9
   typescript: ^4.4.4
   uuid: ^8.3.2
   vite: ^2.7.2
@@ -16,12 +16,12 @@ dependencies:
   '@types/uuid': 8.3.4
   '@vanilla-extract/css': 1.6.8
   '@vanilla-extract/vite-plugin': 3.1.2_vite@2.7.12
-  tuff-core: 0.2.5
+  saxes: 6.0.0
+  tuff-core: 0.2.9
   uuid: 8.3.2
 
 devDependencies:
   happy-dom: 2.39.1
-  saxes: 6.0.0
   typescript: 4.5.4
   vite: 2.7.12
   vitest: 0.3.4_happy-dom@2.39.1
@@ -952,7 +952,7 @@ packages:
     engines: {node: '>=v12.22.7'}
     dependencies:
       xmlchars: 2.2.0
-    dev: true
+    dev: false
 
   /side-channel/1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
@@ -1035,8 +1035,8 @@ packages:
     resolution: {integrity: sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o=}
     dev: true
 
-  /tuff-core/0.2.5:
-    resolution: {integrity: sha512-rUtJbZQyuC8e+r9lc6FTLaixFg8djqFWyvBynNNM+2oETzAh59cX6X1lClQlTU+k+XpM8So4DLuEvGDLYEQ78A==}
+  /tuff-core/0.2.9:
+    resolution: {integrity: sha512-TxWSkuZu0U/x4dNNBTehIC6L+PqaUBozdwAaoCXOmCAtM1LTFMVf1auAfbBMgZQtqw02rbQnACE+2OYpENH/hg==}
     dev: false
 
   /type-detect/4.0.8:
@@ -1172,7 +1172,7 @@ packages:
 
   /xmlchars/2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
-    dev: true
+    dev: false
 
   /yaml/1.10.2:
     resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}

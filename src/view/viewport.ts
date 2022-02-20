@@ -7,6 +7,7 @@ import * as mat from '../geom/mat'
 import * as vec from '../geom/vec'
 
 const log = new tuff.logging.Logger("Viewport")
+
 export class Viewport extends tuff.parts.Part<Project> {
     tileParts: {[id: string]: TilePart} = {}
 
@@ -20,6 +21,7 @@ export class Viewport extends tuff.parts.Part<Project> {
 
         // compute the plane size based on the bounding box of the tiles
         const tilesBox = this.state.boundingBox
+        
         // compute larger spans so that there's room to scroll,
         // with a minimum for small projects
         const xSpan = Math.min(tilesBox.width*4, 1000)

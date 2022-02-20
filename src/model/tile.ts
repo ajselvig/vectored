@@ -1,8 +1,9 @@
 import Group from './group'
-import { ProjectModel } from './model'
+import { ModelRenderTag, ProjectModel } from './model'
 import * as box from '../geom/box'
 import Path from './path'
 import Project from './project'
+import * as tuff from 'tuff-core'
 
 type TileDef = {
     bounds: box.Box
@@ -32,6 +33,18 @@ export default class Tile extends ProjectModel<TileDef, Path | Group> {
 
     get bottom(): number {
         return this.def.bounds.y + this.def.bounds.height
+    }
+
+    renderInHtml(parent: tuff.html.HtmlTagBase<tuff.tags.Attrs>) {
+        parent.svg(svg => {
+            this.render(svg)
+        })
+    }
+
+    render(parent: ModelRenderTag): void {
+        this.each(child => {
+            child.render(parent)
+        })
     }
     
 }
