@@ -18,7 +18,7 @@ function generateId(): string {
 interface ModelTypeMap {
     project: Project,
     tile: Tile,
-    group: Group,
+    group: Group
     path: Path
 }
 
@@ -35,7 +35,7 @@ export interface IModel {
     readonly type: ModelTypeName
     name: string
     project: Project
-    add(child: IModel): void
+    append(child: IModel): void
     get(index: number): IModel | null
     count: number
 }
@@ -55,8 +55,6 @@ function nextCount(type: ModelTypeName): number {
     }
     return counters[type] += 1
 }
-
-type ModelMap<T> = {[id: string]: T}
 
 /**
  * Base class for all model objects that provides identity.
@@ -89,7 +87,7 @@ export default abstract class Model<ChildType extends IModel> {
         return this.children[index] as T
     }
 
-    add<T extends ChildType>(child: T) {
+    append<T extends ChildType>(child: T) {
         this.children.push(child)
     }
 

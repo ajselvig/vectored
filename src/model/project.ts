@@ -12,7 +12,7 @@ export default class Project extends Model<Tile> {
 
     makeTile(x: number, y: number, width: number, height: number): Tile {
         const tile = new Tile(this, undefined, box.make(x, y, width, height))
-        this.add(tile)
+        this.append(tile)
         return tile
     }
 

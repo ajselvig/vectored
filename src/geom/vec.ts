@@ -43,10 +43,14 @@ export const origin = (): Vec => {
 }
 
 /**
+ * @param precision the number of significant digits for each component - 0 means all
  * @returns the coordinates joined by `delimeter`.
  */
-export const print = (v: Vec, delimeter: string = ','): string => {
-    return [v.x, v.y].join(delimeter)
+export const print = (v: Vec, precision=0): string => {
+    if (precision) {
+        return [v.x.toPrecision(precision), v.y.toPrecision(precision)].join(',')
+    }
+    return [v.x, v.y].join(',')
 }
 
 /**

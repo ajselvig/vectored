@@ -20,7 +20,7 @@ test("svg parsing", () => {
     expect(tile.count).eq(1)
 
     const g = tile.children[0] as Group
-    expect(g.count).eq(2)
+    expect(g.count).eq(3)
 
 
 })

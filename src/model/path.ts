@@ -23,9 +23,9 @@ export type Vertex = {
  * @returns a nicely formatted string with the format "(in)->[point]->(out) type"
  */
 export function printVertex(v: Vertex): string {
-    let s = vec.print(v.point)
-    const inString = v.in ? vec.print(v.in) : ''
-    const outString = v.out ? vec.print(v.out) : ''
+    let s = vec.print(v.point, 3)
+    const inString = v.in ? vec.print(v.in, 3) : ''
+    const outString = v.out ? vec.print(v.out, 3) : ''
     return `(${inString})->[${s}]->(${outString}) ${v.type}`
 }
 
@@ -67,6 +67,26 @@ export default class Path extends ProjectModel<never> {
     }
 }
 
+
+/**
+ * Parses a raw points string into a path definition.
+ * @param rawPoints a string containing space and/or comma-separated values
+ * @param openOrClosed whether the path is open or closed
+ * @returns a {PathDef} with point vertices for each point
+ */
+export function points2Def(rawPoints: string, openOrClosed: OpenOrClosed): PathDef {
+    const values = rawPoints.split(/[\s,]+/g).map(p => {return parseFloat(p)})
+    const vertices = Array<Vertex>()
+    for (let i=0; i<values.length; i+=2) {
+        const v1 = values[i]
+        const v2 = values[i+1]
+        if (typeof v2 == 'number') { // there may be an odd number of values
+            // the spec says to skip the last one
+            vertices.push({point: vec.make(v1, v2), type: 'point'})
+        }
+    }
+    return {vertices, openOrClosed}
+}
 
 
 /**

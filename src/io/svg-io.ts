@@ -1,20 +1,14 @@
 import Project from '../model/project'
 import Tile from '../model/tile'
 import * as tuff from 'tuff-core'
-import { IModel, ProjectModel } from '../model/model'
+import { IModel } from '../model/model'
 import Group from '../model/group'
-import Path, { d2PathDef, printPathDef } from '../model/path'
+import Path, { d2PathDef, OpenOrClosed, points2Def, printPathDef } from '../model/path'
 import saxes from 'saxes'
 
 const log = new tuff.logging.Logger("SVG IO")
 
 type RawTag = saxes.SaxesTagPlain
-
-const supportedTags: {[tag: string]: boolean} = {
-    "svg": true,
-    "g": true,
-    "path": true
-}
 
 /**
  * Parses a raw SVG document into a {Tile}.
@@ -33,11 +27,12 @@ export class SvgParser {
         let rootTile: Tile|null = null
 
         const stack: IModel[] = []
+        let lastSkippedTag = ""
         
         // pushes a child to the stack and adds it to the previous parent
         const pushParent = (child: IModel) => {
             if (stack.length) {
-                stack[stack.length-1].add(child)
+                stack[stack.length-1].append(child)
             }
             else if (child.type == "tile") {
                 rootTile = child as Tile
@@ -53,6 +48,9 @@ export class SvgParser {
             return stack.pop()
         }
 
+        // happy-dom does not support using DOMParser to parse XML documents:
+        // https://github.com/capricorn86/happy-dom/issues/282
+        // and jsdom didn't seem to work correctly either, so we're using a generic SAX parser
         const parser = new saxes.SaxesParser()
         parser.on("error", e => {
             log.warn("Error", e)
@@ -60,10 +58,6 @@ export class SvgParser {
 
         parser.on("opentag", tag => {
             const tagName = tag.name.toLowerCase()
-            if (!supportedTags[tagName]) {
-                return log.info(`Skipping unsupported tag ${tagName}`)
-            }
-            log.info(`Open ${tag.name} tag`, tag.attributes)
             switch (tagName) {
                 case "svg":
                     pushParent(this.parseSvg(tag, project))
@@ -71,21 +65,25 @@ export class SvgParser {
                 case "g":
                     pushParent(this.parseGroup(tag, project))
                     break
-                // case "polygon":
-                //     this.parsePolygon(child as SVGPolygonElement, parent)
-                //     break
+                case "polygon":
+                    pushParent(this.parsePolygon(tag, project, "closed"))
+                    break
+                case "polyline":
+                    pushParent(this.parsePolygon(tag, project, "open"))
+                    break
                 case "path":
                     pushParent(this.parsePath(tag, project))
                     break
                 default:
-                    throw `Tag ${tagName} is on the supported tags list but has not open event handler`
+                    lastSkippedTag = tagName
+                    log.warn(`Skipping unsupported tag ${tagName}`)
             }
         })
 
         parser.on("closetag", tag => {
             const tagName = tag.name.toLowerCase()
-            if (!supportedTags[tagName]) {
-                return
+            if (lastSkippedTag == tagName) {
+                return // don't pop since we didn't push
             }
             log.info(`Close ${tag.name} tag`)
             popParent()
@@ -116,9 +114,17 @@ export class SvgParser {
         return new Group(project)
     }
 
-    // parsePolygon(elem: SVGPolygonElement, parent: IModel) {
-    //     log.info(`Parsing polygon with parent ${parent.name}`, elem.innerHTML)
-    // }
+    parsePolygon(tag: RawTag, project: Project, openOrClosed: OpenOrClosed) {
+        const points = tag.attributes['points']
+        if (!points) {
+            throw `Polygon/Polyline tag doesn't have a 'points' attribute!`
+        }
+        log.info(`Parsing polygon with with points "${points}"`, tag.attributes)
+        const def = points2Def(points, openOrClosed)
+        const path = new Path(project)
+        path.def = def
+        return path
+    }
 
     parsePath(tag: RawTag, project: Project) {
         const d = tag.attributes["d"]!

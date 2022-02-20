@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import {d2PathDef, PathDef, pathDef2d, printPathDef} from './path'
+import {d2PathDef, PathDef, pathDef2d, points2Def, printPathDef} from './path'
 import * as vec from '../geom/vec'
 
 function printDefs(d: string, def: PathDef) {
@@ -8,6 +8,14 @@ function printDefs(d: string, def: PathDef) {
     ]
     console.log(lines.join("\n"))
 }
+
+test("polyline points parsing", () => {
+    let points = "0,1 2,3, 4,5"
+    let def = points2Def(points, "open")
+    expect(def.vertices.length).eq(3)
+    expect(def.vertices[0].point).toMatchObject({x: 0, y: 1})
+    expect(def.vertices[0].type).eq("point")
+})
 
 test("d line parsing", () => {
     let d = "M 1,2.5 L 3.5,4 l 2,-2 Z"
