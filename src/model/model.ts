@@ -38,6 +38,7 @@ export interface IModel {
     append(child: IModel): void
     get(index: number): IModel | null
     count: number
+    def: {}
 }
 
 /**
@@ -59,14 +60,15 @@ function nextCount(type: ModelTypeName): number {
 /**
  * Base class for all model objects that provides identity.
  */
-export default abstract class Model<ChildType extends IModel> {
+export default abstract class Model<DefType extends {}, ChildType extends IModel> {
 
     readonly id: string
     name: string
     readonly children: Array<ChildType>
     abstract readonly project: Project
 
-    constructor(readonly type: ModelTypeName, id?: string|null) {
+    constructor(readonly type: ModelTypeName, 
+            public def: DefType, id?: string|null) {
         if (id) {
             this.id = id
         }
@@ -101,10 +103,10 @@ export default abstract class Model<ChildType extends IModel> {
 
 }
 
-export abstract class ProjectModel<ChildType extends IModel> extends Model<ChildType> {
+export abstract class ProjectModel<DefType extends {}, ChildType extends IModel> extends Model<DefType, ChildType> {
 
-    constructor(type: ModelTypeName, readonly project: Project, id?: string|null) {
-        super(type, id)
+    constructor(type: ModelTypeName, readonly project: Project, def: DefType, id?: string|null) {
+        super(type, def, id)
         this.project.register(this)
     }
 

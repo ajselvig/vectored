@@ -58,12 +58,10 @@ export function printPathDef(def: PathDef): string {
 /**
  * A series of vertices forming an open or closed path of straight and/or curved edges.
  */
-export default class Path extends ProjectModel<never> {
+export default class Path extends ProjectModel<PathDef, never> {
 
-    def: PathDef = {vertices: [], openOrClosed: "open"}
-
-    constructor(readonly project: Project, id?: string) {
-        super('path', project, id)
+    constructor(readonly project: Project, def: PathDef, id?: string) {
+        super('path', project, def, id)
     }
 }
 

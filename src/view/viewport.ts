@@ -45,7 +45,7 @@ export class Viewport extends tuff.parts.Part<Project> {
                     parts[tile.id] = this.makePart(TilePart, tile)
                 }
                 // make a container for the tile at the correct size and position
-                const tileBox = mat.transformBox(this.viewportToPlane, tile.bounds)
+                const tileBox = mat.transformBox(this.viewportToPlane, tile.def.bounds)
                 plane.div(styles.tileContainer, tileContainer => {
                     tileContainer.part(parts[tile.id])
                 }).css({

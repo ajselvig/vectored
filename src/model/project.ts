@@ -2,16 +2,18 @@ import * as box from '../geom/box'
 import Model, { IModel } from './model'
 import Tile from './tile'
 
-export default class Project extends Model<Tile> {
+type ProjectDef = {}
+
+export default class Project extends Model<ProjectDef, Tile> {
     readonly items: {[id: string]: IModel}
 
     constructor(id?: string|null) {
-        super('project', id)
+        super('project', {}, id)
         this.items = {}
     }
 
     makeTile(x: number, y: number, width: number, height: number): Tile {
-        const tile = new Tile(this, undefined, box.make(x, y, width, height))
+        const tile = new Tile(this, {bounds: box.make(x, y, width, height)})
         this.append(tile)
         return tile
     }
@@ -40,10 +42,10 @@ export default class Project extends Model<Tile> {
         let b: box.Box|undefined = undefined
         this.eachOfType("tile", tile => {
             if (b) {
-                b = box.union(b, tile.bounds)
+                b = box.union(b, tile.def.bounds)
             }
             else {
-                b = tile.bounds
+                b = tile.def.bounds
             }
         })
         return b!

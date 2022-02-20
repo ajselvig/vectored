@@ -61,18 +61,25 @@ export const empty = (): Box => {
  */
 export function make(x: number, y: number, width: number, height: number): Box
 export function make(origin: vec.Vec, size: vec.Vec): Box
-export function make(xorigin: number|vec.Vec, ysize: number|vec.Vec, width?: number, height?: number): Box {
-    if (typeof xorigin == 'number') {
+export function make(array: number[]): Box
+export function make(xorigin: number|vec.Vec|number[], ysize?: number|vec.Vec, width?: number, height?: number): Box {
+    if (Array.isArray(xorigin)) {
+        if (xorigin.length == 4) {
+            return {x: xorigin[0], y: xorigin[1], width: xorigin[2], height: xorigin[3]}
+        }
+        throw `You must pass exactly 4 numbers into box.make, not ${xorigin.length}`
+    }
+    else if (typeof xorigin == 'number') {
         if (typeof ysize == 'number') {
             return {x: xorigin, y: ysize, width: width||0, height: height||0}
         }
-        throw(`If the first argument is a number, the second one should be as well`)
+        throw `If the first argument is a number, the second one should be as well`
     }
     else {
         if (typeof ysize == 'object') {
             return {x: xorigin.x, y: xorigin.y, width: ysize.x, height: ysize.y}
         }
-        throw(`If the first argument is an object, the second one should be as well`)
+        throw `If the first argument is an object, the second one should be as well`
     }
 }
 

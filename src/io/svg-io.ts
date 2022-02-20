@@ -2,6 +2,7 @@ import Project from '../model/project'
 import Tile from '../model/tile'
 import * as tuff from 'tuff-core'
 import { IModel } from '../model/model'
+import * as box from '../geom/box'
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, points2Def, printPathDef } from '../model/path'
 import saxes from 'saxes'
@@ -100,12 +101,12 @@ export class SvgParser {
 
     parseSvg(tag: RawTag, project: Project): Tile {
         log.info(`Parsing ${tag.name} tag`, tag.attributes)
-        const tile = new Tile(project)
         const viewBox = tag.attributes['viewBox'].split(/\s+/).map(n => {return parseFloat(n)})
         if (viewBox.length != 4) {
             throw `Expect viewBox attribute to have 4 values, not ${viewBox.length}: ${viewBox}`
         }
-        tile.place(viewBox[0], viewBox[1], viewBox[2], viewBox[3])
+        const bounds = box.make(viewBox)
+        const tile = new Tile(project, {bounds})
         return tile
     }
 
@@ -121,7 +122,7 @@ export class SvgParser {
         }
         log.info(`Parsing polygon with with points "${points}"`, tag.attributes)
         const def = points2Def(points, openOrClosed)
-        const path = new Path(project)
+        const path = new Path(project, def)
         path.def = def
         return path
     }
@@ -129,8 +130,7 @@ export class SvgParser {
     parsePath(tag: RawTag, project: Project) {
         const d = tag.attributes["d"]!
         log.info(`Parsing path`, tag.attributes)
-        const path = new Path(project)
-        path.def = d2PathDef(d)
+        const path = new Path(project, d2PathDef(d))
         log.info(`Parsed path "${d}" to:`, printPathDef(path.def))
         return path
     }
