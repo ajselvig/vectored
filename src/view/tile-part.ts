@@ -6,7 +6,7 @@ export class TilePart extends tuff.parts.Part<Tile> {
     render(parent: tuff.parts.PartTag) {
         parent.class(styles.tile)
         parent.div(styles.tileLabel)
-            .text(this.state.name)
+            .text(this.state.def.name || this.state.id)
         this.state.renderInHtml(parent)
     }
     

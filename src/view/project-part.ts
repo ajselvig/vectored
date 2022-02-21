@@ -33,7 +33,7 @@ export class ProjectPart extends tuff.parts.Part<Project> {
                 log.info("Fetched svg", raw)
                 const parser = new SvgParser(raw)
                 const tile = parser.toTile(this.state)
-                tile.name = name
+                tile.def.name = name
                 this.dirty()
             })
             

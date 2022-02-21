@@ -27,7 +27,17 @@ interface ModelTypeMap {
  */
 export type ModelTypeName = keyof ModelTypeMap
 
+/**
+ * All models render to an SVG parent tag.
+ */
 export type ModelRenderTag = tuff.svg.SvgParentTag
+
+/**
+ * Base type for all model definitions.
+ */
+export type ModelDef = {
+    name?: string
+}
 
 /**
  * Untyped interface for models.
@@ -35,12 +45,11 @@ export type ModelRenderTag = tuff.svg.SvgParentTag
 export interface IModel {
     readonly id: string
     readonly type: ModelTypeName
-    name: string
     project: Project
     append(child: IModel): void
     get(index: number): IModel | null
     count: number
-    def: {}
+    def: ModelDef
     render(parent: ModelRenderTag): void
 }
 
@@ -63,10 +72,9 @@ function nextCount(type: ModelTypeName): number {
 /**
  * Base class for all model objects that provides identity.
  */
-export default abstract class Model<DefType extends {}, ChildType extends IModel> {
+export default abstract class Model<DefType extends ModelDef, ChildType extends IModel> {
 
     readonly id: string
-    name: string
     readonly children: Array<ChildType>
     abstract readonly project: Project
 
@@ -79,8 +87,8 @@ export default abstract class Model<DefType extends {}, ChildType extends IModel
             this.id = generateId()
         }
         const num = nextCount(type)
-        this.name = `${this.type} ${num}`
-        log.info(`New ${this.name}`)
+        def.name = `${this.type} ${num}`
+        log.info(`New ${def.name}`)
         this.children = []
     }
 
@@ -114,7 +122,7 @@ export default abstract class Model<DefType extends {}, ChildType extends IModel
 
 }
 
-export abstract class ProjectModel<DefType extends {}, ChildType extends IModel> extends Model<DefType, ChildType> {
+export abstract class ProjectModel<DefType extends ModelDef, ChildType extends IModel> extends Model<DefType, ChildType> {
 
     constructor(type: ModelTypeName, readonly project: Project, def: DefType, id?: string|null) {
         super(type, def, id)

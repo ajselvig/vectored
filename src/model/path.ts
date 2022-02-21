@@ -1,4 +1,4 @@
-import { ModelRenderTag, ProjectModel } from './model'
+import { ModelDef, ModelRenderTag, ProjectModel } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
@@ -39,7 +39,7 @@ export type OpenOrClosed = 'open' | 'closed'
 export type PathDef = {
     vertices: Vertex[]
     openOrClosed: OpenOrClosed
-}
+} & ModelDef
 
 /**
  * @returns a nicely formatted string for the {PathDef}.

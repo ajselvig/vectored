@@ -1,5 +1,5 @@
 import Group from './group'
-import { ModelRenderTag, ProjectModel } from './model'
+import { ModelDef, ModelRenderTag, ProjectModel } from './model'
 import * as box from '../geom/box'
 import Path from './path'
 import Project from './project'
@@ -7,7 +7,7 @@ import * as tuff from 'tuff-core'
 
 type TileDef = {
     bounds: box.Box
-}
+} & ModelDef
 
 export default class Tile extends ProjectModel<TileDef, Path | Group> {
 

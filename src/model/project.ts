@@ -1,8 +1,8 @@
 import * as box from '../geom/box'
-import Model, { IModel, ModelRenderTag } from './model'
+import Model, { IModel, ModelDef, ModelRenderTag } from './model'
 import Tile from './tile'
 
-type ProjectDef = {}
+type ProjectDef = ModelDef
 
 export default class Project extends Model<ProjectDef, Tile> {
     readonly items: {[id: string]: IModel}
