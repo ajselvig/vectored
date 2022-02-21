@@ -35,7 +35,7 @@ export default class Tile extends ProjectModel<TileDef, Path | Group> {
         return this.def.bounds.y + this.def.bounds.height
     }
 
-    renderInHtml(parent: tuff.html.HtmlTagBase<tuff.tags.Attrs>) {
+    renderInHtml(parent: tuff.html.HtmlParentTag) {
         parent.svg(svg => {
             svg.attrs({width: this.def.bounds.width, height: this.def.bounds.height})
             this.render(svg)
