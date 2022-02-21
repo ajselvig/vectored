@@ -6,7 +6,7 @@ specifiers:
   '@vanilla-extract/vite-plugin': ^3.1.2
   happy-dom: ^2.39.1
   saxes: ^6.0.0
-  tuff-core: ^0.2.9
+  tuff-core: ^0.2.11
   typescript: ^4.4.4
   uuid: ^8.3.2
   vite: ^2.7.2
@@ -17,7 +17,7 @@ dependencies:
   '@vanilla-extract/css': 1.6.8
   '@vanilla-extract/vite-plugin': 3.1.2_vite@2.7.12
   saxes: 6.0.0
-  tuff-core: 0.2.9
+  tuff-core: 0.2.11
   uuid: 8.3.2
 
 devDependencies:
@@ -1035,8 +1035,8 @@ packages:
     resolution: {integrity: sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o=}
     dev: true
 
-  /tuff-core/0.2.9:
-    resolution: {integrity: sha512-TxWSkuZu0U/x4dNNBTehIC6L+PqaUBozdwAaoCXOmCAtM1LTFMVf1auAfbBMgZQtqw02rbQnACE+2OYpENH/hg==}
+  /tuff-core/0.2.11:
+    resolution: {integrity: sha512-FZdQB/bvebEOh5H844wwMrzUpGWzQZbIPr1syhWuvcqpW3kco2jnd7xTkR3tlCgY/elreCw+gtM1UQIM0w8vBw==}
     dev: false
 
   /type-detect/4.0.8:

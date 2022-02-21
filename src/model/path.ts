@@ -65,7 +65,7 @@ export default class Path extends ProjectModel<PathDef, never> {
     
     render(parent: ModelRenderTag): void {
         const d = pathDef2d(this.def)
-        parent.path({d: d})
+        parent.path({d: d, fill: '#fff', stroke: '#000', strokeWidth: 2})
     }
 }
 

@@ -17,7 +17,7 @@ export class AppPart extends tuff.parts.Part<{}> {
         const project = new Project()
 
         this.projectPart = this.makePart(ProjectPart, project)
-        this.projectPart.fetchTile(tsUrl)
+        this.projectPart.fetchTile('Typescript', tsUrl)
 
         this.topBar = this.makeStatelessPart(TopBar)
         this.bottomBar = this.makeStatelessPart(BottomBar)

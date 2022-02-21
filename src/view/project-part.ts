@@ -27,12 +27,13 @@ export class ProjectPart extends tuff.parts.Part<Project> {
         parent.part(this.settings)
     }
 
-    fetchTile(url: string) {
+    fetchTile(name: string, url: string) {
         fetch(url).then(res => {
             res.text().then(raw => {
                 log.info("Fetched svg", raw)
                 const parser = new SvgParser(raw)
-                parser.toTile(this.state)
+                const tile = parser.toTile(this.state)
+                tile.name = name
                 this.dirty()
             })
             
