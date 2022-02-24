@@ -1,6 +1,6 @@
 import * as tuff from 'tuff-core'
 import Tile from "../model/tile"
-import * as styles from '../styles.css'
+import * as styles from '../ui-styles.css'
 
 export class TilePart extends tuff.parts.Part<Tile> {
     render(parent: tuff.parts.PartTag) {

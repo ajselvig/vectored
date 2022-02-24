@@ -15,9 +15,11 @@
     "vitest": "^0.3.4"
   },
   "dependencies": {
+    "@types/color": "^3.0.3",
     "@types/uuid": "^8.3.4",
     "@vanilla-extract/css": "^1.6.8",
     "@vanilla-extract/vite-plugin": "^3.1.2",
+    "color": "^4.2.1",
     "saxes": "^6.0.0",
     "tuff-core": "^0.2.12",
     "uuid": "^8.3.2"

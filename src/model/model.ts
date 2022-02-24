@@ -4,6 +4,7 @@ import * as tuff from 'tuff-core'
 import Tile from './tile'
 import Group from './group'
 import Path from './path'
+import { StyleDef } from './style'
 
 const log = new tuff.logging.Logger("Model")
 
@@ -122,11 +123,38 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
 
 }
 
+/**
+ * Base class for all models belonging to a project.
+ */
 export abstract class ProjectModel<DefType extends ModelDef, ChildType extends IModel> extends Model<DefType, ChildType> {
 
     constructor(type: ModelTypeName, readonly project: Project, def: DefType, id?: string|null) {
         super(type, def, id)
         this.project.register(this)
+    }
+
+}
+
+/**
+ * Model definition that includes style information.
+ */
+export type StyledModelDef = ModelDef & {
+    style?: StyleDef
+    styleId?: string
+}
+
+export abstract class StyledModel<DefType extends StyledModelDef, ChildType extends IModel> extends ProjectModel<DefType, ChildType> {
+
+    constructor(type: ModelTypeName, readonly project: Project, def: DefType, id?: string|null) {
+        super(type, project, def, id)
+    }
+
+    /**
+     * Computes the style either directly from the def or from the project using `def.styleId`.
+     */
+    get computedStyle(): StyleDef|undefined {
+        // TODO: return the style using styleId from the project
+        return this.def.style 
     }
 
 }

@@ -1,6 +1,6 @@
 import Project from "../model/project"
 import { ProjectPart } from "./project-part"
-import * as styles from '../styles.css'
+import * as styles from '../ui-styles.css'
 import { TopBar } from "./top-bar"
 import { BottomBar } from "./bottom-bar"
 import tsUrl from '../io/test/typescript.svg'

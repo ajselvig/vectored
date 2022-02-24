@@ -1,4 +1,4 @@
-import { ModelDef, ModelRenderTag, ProjectModel } from './model'
+import { ModelRenderTag, StyledModel, StyledModelDef } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
@@ -36,10 +36,10 @@ export type OpenOrClosed = 'open' | 'closed'
 /**
  * Internal representation of paths.
  */
-export type PathDef = {
+export type PathDef = StyledModelDef & {
     vertices: Vertex[]
     openOrClosed: OpenOrClosed
-} & ModelDef
+}
 
 /**
  * @returns a nicely formatted string for the {PathDef}.
@@ -57,7 +57,7 @@ export function printPathDef(def: PathDef): string {
 /**
  * A series of vertices forming an open or closed path of straight and/or curved edges.
  */
-export default class Path extends ProjectModel<PathDef, never> {
+export default class Path extends StyledModel<PathDef, never> {
 
     constructor(readonly project: Project, def: PathDef, id?: string) {
         super('path', project, def, id)
@@ -65,7 +65,12 @@ export default class Path extends ProjectModel<PathDef, never> {
     
     render(parent: ModelRenderTag): void {
         const d = pathDef2d(this.def)
-        parent.path({d: d, fill: '#fff', stroke: '#000', strokeWidth: 2})
+        let attrs = {d: d}
+        const style = this.computedStyle
+        if (style) {
+            attrs = {...attrs, ...style}
+        }
+        parent.path(attrs)
     }
 }
 

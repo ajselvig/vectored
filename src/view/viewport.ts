@@ -1,4 +1,4 @@
-import * as styles from '../styles.css'
+import * as styles from '../ui-styles.css'
 import Project from "../model/project"
 import * as tuff from 'tuff-core'
 import { TilePart } from "./tile-part"

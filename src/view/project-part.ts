@@ -1,6 +1,6 @@
 import * as tuff from 'tuff-core'
 import Project from "../model/project"
-import * as styles from '../styles.css'
+import * as styles from '../ui-styles.css'
 import { Tree } from "./tree"
 import { Settings } from "./settings"
 import { Viewport } from "./viewport"

@@ -1,4 +1,4 @@
-import * as styles from '../styles.css'
+import * as styles from '../ui-styles.css'
 import * as tuff from 'tuff-core'
 
 export class TopBar extends tuff.parts.Part<{}> {

@@ -1,4 +1,4 @@
-import './styles.css'
+import './ui-styles.css'
 import * as tuff from 'tuff-core'
 import { AppPart } from './view/app-part'
 
