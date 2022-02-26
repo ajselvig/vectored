@@ -257,7 +257,9 @@ export const tileLabel = style({
 /// Settings
 
 export const settingsLayout = style({
-    flex: `0 0 ${sizes.projectColumnWidth}px`,
+    flex: `0 1 ${sizes.projectColumnWidth}px`,
+    minWidth: 0,
+    maxWidth: 0, // for now
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: colors.pane,

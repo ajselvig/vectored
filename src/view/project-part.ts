@@ -6,6 +6,7 @@ import { Settings } from "./settings"
 import { Viewport } from "./viewport"
 
 const log = new tuff.logging.Logger("Project Part")
+
 export class ProjectPart extends tuff.parts.Part<Project> {
 
     tree!: Tree
@@ -33,6 +34,7 @@ export class ProjectPart extends tuff.parts.Part<Project> {
                 const tile = this.state.loadTile(raw)
                 tile.def.name = name
                 this.dirty()
+                this.state.arrangeTiles()
             })
             
         })

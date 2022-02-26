@@ -21,5 +21,8 @@ test("svg parsing", () => {
     expect(g.count).eq(3)
 
     const viteTile = project.loadTile(viteSvg)
+    expect(viteTile.right).eq(410)
+    expect(viteTile.bottom).eq(404)
+    expect(viteTile.count).eq(2)
 
 })

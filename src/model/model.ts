@@ -4,7 +4,7 @@ import * as tuff from 'tuff-core'
 import Tile from './tile'
 import Group from './group'
 import Path from './path'
-import { StyleDef } from './style'
+import { StyleDef, paintDef2string } from './style'
 import { TransformList } from './transform'
 
 const log = new tuff.logging.Logger("Model")
@@ -169,10 +169,10 @@ export abstract class StyledModel<DefType extends StyledModelDef, ChildType exte
     applyStyle(attrs: tuff.svg.SvgBaseAttrs, style: StyleDef) {
         // TODO: handle non-string PaintDefs
         if (style.fill) {
-            attrs.fill = style.fill.toString()
+            attrs.fill = paintDef2string(style.fill)
         }
         if (style.stroke) {
-            attrs.stroke = style.stroke.toString()
+            attrs.stroke = paintDef2string(style.stroke)
         }
         if (style.strokeWidth) {
             attrs.strokeWidth = style.strokeWidth

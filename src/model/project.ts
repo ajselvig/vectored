@@ -37,6 +37,15 @@ export default class Project extends Model<ProjectDef, Tile> {
         return parser.toTile(this)
     }
 
+    // TODO: accept params for how to arrange tiles
+    arrangeTiles() {
+        let x = 0
+        this.eachOfType("tile", tile => {
+            tile.def.bounds = {...tile.def.bounds, x}
+            x = this.clampToPlaneGrid(x + tile.def.bounds.width + 2*this.planeGridSize)
+        })
+    }
+
     get project(): Project {
         return this
     }
@@ -75,6 +84,10 @@ export default class Project extends Model<ProjectDef, Tile> {
      * The size of the dot grid on the backing plane.
      */
     planeGridSize: number = 25
+
+    clampToPlaneGrid(x: number): number {
+        return Math.round(x / this.planeGridSize) * this.planeGridSize
+    }
     
     // this doesn't really apply to projects
     render(_: ModelRenderTag): void {

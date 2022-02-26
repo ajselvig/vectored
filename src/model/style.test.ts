@@ -10,7 +10,7 @@ test("Basic style parsing", () => {
     }
     const def = attributes2StyleDef(attrs)
     expect(def).toBeDefined()
-    expect(def?.fill).eq('#FFFFFF')
-    expect(def?.stroke).eq('#000000')
+    expect(def?.fill).toMatchObject({color: '#FFFFFF'})
+    expect(def?.stroke).toMatchObject({color: '#000000'})
     expect(def?.strokeWidth).eq(2)
 })
