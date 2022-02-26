@@ -58,9 +58,17 @@ export const multiply = (m1: Mat, m2: Mat): Mat => {
 /**
  * @returns matrix `m` translated by `v`.
  */
-export const translate = (m: Mat, v: vec.Vec): Mat => {
-    return multiply(m, make(1, 0, 0, 1, v.x, v.y))
+export function translate(m: Mat, v: vec.Vec): Mat
+export function translate(m: Mat, x: number, y: number): Mat
+export function translate(m: Mat, vx: vec.Vec|number, y?: number): Mat {
+    if (typeof vx == 'number') {
+        return multiply(m, make(1, 0, 0, 1, vx, y || 0))
+    }
+    else {
+        return multiply(m, make(1, 0, 0, 1, vx.x, vx.y))
+    }
 }
+
 
 /**
  * @returns matrix `m` rotated by `angle` radians.
@@ -77,6 +85,21 @@ export const rotate = (m: Mat, angle: number): Mat => {
 export const scale = (m: Mat, sx: number, sy?: number): Mat =>  {
     return multiply(m, make(sx, 0, 0, sy||sx, 0, 0))
 }
+
+/**
+ * @returns matrix `m` skewed by `a` degrees along the x axis.
+ */
+export const skewX = (m: Mat, a: number): Mat => {
+    return multiply(m, make(1,0,Math.tan(a),1,0,0))
+}
+
+/**
+ * @returns matrix `m` skewed by `a` degrees along the y axis.
+ */
+export const skewY = (m: Mat, a: number): Mat => {
+    return multiply(m, make(1,Math.tan(a),0,1,0,0))
+}
+
 
 /**
  * @returns `v` transformed by `m`.
