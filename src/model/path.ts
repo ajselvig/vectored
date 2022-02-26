@@ -168,15 +168,15 @@ export function d2PathDef(d: string): PathDef {
         
         // an array of arrays of numbers for each point
         log.debug("Parsing raw comp", rawValues)
-        const values = rawValues.split(/\s+/g).map(pair => {
-            return [...pair.trim().matchAll(/\-*\d+\.*\d*/g)].map(v => {return parseFloat(v[0])})
+        const values = rawValues.split(/[\s,]+/g).map(rawVal => {
+            return parseFloat(rawVal)
         })
 
         switch (command) {
             case 'M':
             case 'm':
                 // assert(values.length == 1, `Move command must specify one point, not ${values.length}: ${values}`)
-                vertex.point = command=='M' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
+                vertex.point = command=='M' ? vec.make(values) : vec.add(vertex.point, vec.make(values))
                 break
             case 'Z':
                 def.openOrClosed = 'closed'
@@ -185,15 +185,15 @@ export function d2PathDef(d: string): PathDef {
             case 'l':
                 // assert(values.length == 1, `Line command must specify one point, not ${values.length}`)
                 finishVertex('L')
-                vertex.point = command=='L' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
+                vertex.point = command=='L' ? vec.make(values) : vec.add(vertex.point, vec.make(values))
                 break
             case 'C':
             case 'c':
                 // assert(values.length == 3, `Cubic command must specify three points, not ${values.length}: ${values.join(', ')}`)
-                const absOut = command=='C' ? vec.make(values[0]) : vec.add(vertex.point, vec.make(values[0]))
+                const absOut = command=='C' ? vec.make(values[0], values[1]) : vec.add(vertex.point, vec.make(values[0], values[1]))
                 vertex.out = vec.make(absOut.x - vertex.point.x, absOut.y - vertex.point.y)
-                const absIn = command=='C' ? vec.make(values[1]) : vec.add(vertex.point, vec.make(values[1]))
-                const nextPoint = command=='C' ? vec.make(values[2]) : vec.add(vertex.point, vec.make(values[2]))
+                const absIn = command=='C' ? vec.make(values[2], values[3]) : vec.add(vertex.point, vec.make(values[2], values[3]))
+                const nextPoint = command=='C' ? vec.make(values[4], values[5]) : vec.add(vertex.point, vec.make(values[4], values[5]))
                 const nextIn = vec.make(absIn.x - nextPoint.x, absIn.y - nextPoint.y)
                 finishVertex('C')
                 vertex.point = nextPoint

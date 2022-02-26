@@ -4,7 +4,6 @@ import * as styles from '../ui-styles.css'
 import { Tree } from "./tree"
 import { Settings } from "./settings"
 import { Viewport } from "./viewport"
-import { SvgParser } from '../io/svg-io'
 
 const log = new tuff.logging.Logger("Project Part")
 export class ProjectPart extends tuff.parts.Part<Project> {
@@ -31,8 +30,7 @@ export class ProjectPart extends tuff.parts.Part<Project> {
         fetch(url).then(res => {
             res.text().then(raw => {
                 log.info("Fetched svg", raw)
-                const parser = new SvgParser(raw)
-                const tile = parser.toTile(this.state)
+                const tile = this.state.loadTile(raw)
                 tile.def.name = name
                 this.dirty()
             })

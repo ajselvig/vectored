@@ -1,4 +1,5 @@
 import * as box from '../geom/box'
+import { SvgParser } from '../io/svg-io'
 import Model, { IModel, ModelDef, ModelRenderTag } from './model'
 import Tile from './tile'
 
@@ -12,10 +13,28 @@ export default class Project extends Model<ProjectDef, Tile> {
         this.items = {}
     }
 
+    /**
+     * Creates a blank tile in the project.
+     * @param x the left position
+     * @param y the top position
+     * @param width the tile width
+     * @param height the tile height
+     * @returns a new {Tile}
+     */
     makeTile(x: number, y: number, width: number, height: number): Tile {
         const tile = new Tile(this, {bounds: box.make(x, y, width, height)})
         this.append(tile)
         return tile
+    }
+
+    /**
+     * Loads a raw SVG string into a new tile
+     * @param svg a raw SVG string
+     * @returns a new tile from the SVG
+     */
+    loadTile(svg: string): Tile {
+        const parser = new SvgParser(svg)
+        return parser.toTile(this)
     }
 
     get project(): Project {

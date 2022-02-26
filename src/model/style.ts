@@ -50,7 +50,7 @@ export function sanitizeColor(raw: string): string {
 /**
  * Parses the attributes on an SVG element into a style definition.
  * @param attrs a record mapping SVG attribute keys to values
- * @returns a {StyleDef} describing the style attributes or null if no style attributes were present
+ * @returns a {StyleDef} describing the style attributes or undefined if no style attributes were present
  */
 export function attributes2StyleDef(attrs: Record<string,string>): StyleDef | undefined {
     let def: StyleDef | undefined = undefined
