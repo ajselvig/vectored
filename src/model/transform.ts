@@ -1,4 +1,5 @@
 import * as mat from "../geom/mat"
+import * as trig from '../geom/trig'
 
 export type MatrixTransform = mat.Mat & {
     type: 'matrix'
@@ -56,13 +57,13 @@ export function transform2Mat(t: Transform): mat.Mat {
         case 'translate':
             return mat.make(1, 0, 0, 1, t.x, t.y)
         case 'rotate':
-            const cos = Math.cos(t.a)
-            const sin = Math.sin(t.a)
+            const cos = trig.cos(t.a)
+            const sin = trig.sin(t.a)
             return mat.make(cos, sin, -sin, cos, -t.x*cos + t.y*sin + t.x, -t.x*sin - t.y*cos + t.y)
         case 'skewX':
-            return mat.make(1,0,Math.tan(t.a),1,0,0)
+            return mat.make(1,0,trig.tan(t.a),1,0,0)
         case 'skewY':
-            return mat.make(1,Math.tan(t.a),0,1,0,0)
+            return mat.make(1,trig.tan(t.a),0,1,0,0)
     }
 }
 

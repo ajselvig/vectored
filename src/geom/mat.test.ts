@@ -14,7 +14,7 @@ test("matrix translation", () => {
 })
 
 test("matrix rotation", () => {
-    const m = mat.rotate(mat.identity(), Math.PI/2)
+    const m = mat.rotate(mat.identity(), 90)
     const v = vec.make(1, 0)
     const v1 = mat.transform(m, v)
     expect(v1.x).approximately(0, epsilon)

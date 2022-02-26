@@ -1,5 +1,6 @@
 import * as vec from './vec'
 import * as box from './box'
+import * as trig from './trig'
 
 /**
  * An immutable 2D matrix type.
@@ -74,8 +75,8 @@ export function translate(m: Mat, vx: vec.Vec|number, y?: number): Mat {
  * @returns matrix `m` rotated by `angle` radians.
  */
 export const rotate = (m: Mat, angle: number): Mat => {
-    const cos = Math.cos(angle)
-    const sin = Math.sin(angle)
+    const cos = trig.cos(angle)
+    const sin = trig.sin(angle)
     return multiply(m, make(cos, sin, -sin, cos, 0, 0))
 }
 
