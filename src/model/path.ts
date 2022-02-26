@@ -2,6 +2,7 @@ import { ModelRenderTag, StyledModel, StyledModelDef } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
+import { transforms2string } from './transform'
 
 const log = new tuff.logging.Logger("Path")
 
@@ -65,10 +66,13 @@ export default class Path extends StyledModel<PathDef, never> {
     
     render(parent: ModelRenderTag): void {
         const d = pathDef2d(this.def)
-        let attrs = {d: d}
+        let attrs: tuff.svg.PathTagAttrs = {d: d}
         const style = this.computedStyle
+        if (this.def.transforms) {
+            attrs.transform = transforms2string(this.def.transforms)
+        }
         if (style) {
-            attrs = {...attrs, ...style}
+            this.applyStyle(attrs, style)
         }
         parent.path(attrs)
     }

@@ -5,6 +5,7 @@ import Tile from './tile'
 import Group from './group'
 import Path from './path'
 import { StyleDef } from './style'
+import { TransformList } from './transform'
 
 const log = new tuff.logging.Logger("Model")
 
@@ -124,9 +125,17 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
 }
 
 /**
+ * Model definition for models belonging to a project.
+ */
+export type ProjectDef = ModelDef & {
+    transforms?: TransformList
+}
+
+
+/**
  * Base class for all models belonging to a project.
  */
-export abstract class ProjectModel<DefType extends ModelDef, ChildType extends IModel> extends Model<DefType, ChildType> {
+export abstract class ProjectModel<DefType extends ProjectDef, ChildType extends IModel> extends Model<DefType, ChildType> {
 
     constructor(type: ModelTypeName, readonly project: Project, def: DefType, id?: string|null) {
         super(type, def, id)
@@ -138,7 +147,7 @@ export abstract class ProjectModel<DefType extends ModelDef, ChildType extends I
 /**
  * Model definition that includes style information.
  */
-export type StyledModelDef = ModelDef & {
+export type StyledModelDef = ProjectDef & {
     style?: StyleDef
     styleId?: string
 }
@@ -155,6 +164,19 @@ export abstract class StyledModel<DefType extends StyledModelDef, ChildType exte
     get computedStyle(): StyleDef|undefined {
         // TODO: return the style using styleId from the project
         return this.def.style 
+    }
+
+    applyStyle(attrs: tuff.svg.SvgBaseAttrs, style: StyleDef) {
+        // TODO: handle non-string PaintDefs
+        if (style.fill) {
+            attrs.fill = style.fill.toString()
+        }
+        if (style.stroke) {
+            attrs.stroke = style.stroke.toString()
+        }
+        if (style.strokeWidth) {
+            attrs.strokeWidth = style.strokeWidth
+        }
     }
 
 }

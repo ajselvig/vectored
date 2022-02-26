@@ -63,7 +63,89 @@ export function transform2Mat(t: Transform): mat.Mat {
             return mat.make(1,0,Math.tan(t.a),1,0,0)
         case 'skewY':
             return mat.make(1,Math.tan(t.a),0,1,0,0)
-
     }
 }
 
+
+/**
+ * Converts a specific {Transform} into its SVG string representation.
+ */
+export function transform2string(t: Transform): string {
+    switch (t.type) {
+        case 'matrix':
+            return `matrix(${t.a}, ${t.b}, ${t.c}, ${t.d}, ${t.tx}, ${t.ty})`
+        case 'scale':
+            return `scale(${t.x}, ${t.y})`
+        case 'translate':
+            return `translate(${t.x}, ${t.y})`
+        case 'rotate':
+            return `rotate(${t.a}, ${t.x}, ${t.y})`
+        case 'skewX':
+            return `skewX(${t.a})`
+        case 'skewY':
+            return `skewY(${t.a})`
+    }
+}
+
+/**
+ * Converts an array of specific {Transform} objects into its SVG string representation.
+ */
+export function transforms2string(transforms: Array<Transform>): string {
+    return transforms.map(t => {return transform2string(t)}).join(' ')
+}
+
+
+/**
+ * Parses an SVG transform string into {Transform} objects.
+ * @param s an SVG transform attribute literal
+ * @returns an array of {Transform} objects
+ */
+export function parseTransform(s: string): TransformList {
+    const list = new Array<Transform>()
+    if (s.trim().length == 0) {
+        return []
+    }
+    for (let comp of s.trim().split(/\)\s+/)) {
+        const innerComps = comp.split('(')
+        if (innerComps.length != 2) {
+            throw `"${comp}" is not a valid inner transform component, it must contain exactly one '('`
+        }
+        const vals = innerComps[1].trim().split(/[\s,]+/g).map(c => {return parseFloat(c)})
+        switch (innerComps[0]) {
+            case 'matrix':
+                if (vals.length != 6) {throw `"${comp}" must contain exactly 6 values`}
+                list.push({type: 'matrix', a: vals[0], b: vals[1], c: vals[2], d: vals[3], tx: vals[4], ty: vals[5]})
+                break
+            case 'scale':
+                if (vals.length != 2) {throw `"${comp}" must contain exactly 2 values`}
+                list.push({type: 'scale', x: vals[0], y: vals[1]})
+                break
+            case 'translate':
+                if (vals.length != 2) {throw `"${comp}" must contain exactly 2 values`}
+                list.push({type: 'translate', x: vals[0], y: vals[1]})
+                break
+            case 'rotate':
+                if (vals.length == 1) {
+                    list.push({type: 'rotate', a: vals[0], x: 0, y: 0})
+                }
+                else if (vals.length == 3) {
+                    list.push({type: 'rotate', a: vals[0], x: vals[1], y: vals[2]})
+                }
+                else {
+                    throw `"${comp}" must contain either 1 or 3 values`
+                }
+                break
+            case 'skewX':
+                if (vals.length != 1) {throw `"${comp}" must contain exactly 1 value`}
+                list.push({type: 'skewX', a: vals[0]})
+                break
+            case 'skewY':
+                if (vals.length != 1) {throw `"${comp}" must contain exactly 1 value`}
+                list.push({type: 'skewY', a: vals[0]})
+                break
+            default:
+                throw `Invalid transform component "${innerComps[0]}"`
+        }
+    }
+    return list
+}

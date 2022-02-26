@@ -1,12 +1,13 @@
 import Project from '../model/project'
 import Tile from '../model/tile'
 import * as tuff from 'tuff-core'
-import { IModel } from '../model/model'
+import { IModel, ProjectDef } from '../model/model'
 import * as box from '../geom/box'
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, points2Def, printPathDef } from '../model/path'
 import {SaxesParser, SaxesTagPlain} from 'saxes'
 import { attributes2StyleDef } from '../model/style'
+import { parseTransform } from '../model/transform'
 
 const log = new tuff.logging.Logger("SVG IO")
 
@@ -125,6 +126,7 @@ export class SvgParser {
         log.info(`Parsing polygon with with points "${points}"`, tag.attributes)
         const def = points2Def(points, openOrClosed)
         def.style = attributes2StyleDef(tag.attributes)
+        this.parseTransforms(tag, def)
         const path = new Path(project, def)
         path.def = def
         return path
@@ -135,9 +137,19 @@ export class SvgParser {
         log.info(`Parsing path`, tag.attributes)
         const def = d2PathDef(d)
         def.style = attributes2StyleDef(tag.attributes)
+        this.parseTransforms(tag, def)
         const path = new Path(project, def)
         log.info(`Parsed path "${d}" to:`, printPathDef(path.def))
         return path
+    }
+
+    parseTransforms(tag: RawTag, def: ProjectDef) {
+        if (tag.attributes['transform']) {
+            const transforms = parseTransform(tag.attributes['transform'])
+            if (transforms.length) {
+                def.transforms = transforms
+            }
+        }
     }
 
 }
