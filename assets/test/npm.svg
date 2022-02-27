@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="620px" height="260px" viewBox="0 0 620 260" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>npm</title>
+    <g id="npm" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M40,25 L580,25 L580,205 L310,205 L310,235 L190,235 L190,205 L40,205 L40,25 Z M70,175 L130,175 L130,85 L160,85 L160,175 L190,175 L190,55 L70,55 L70,175 Z M220,55 L220,205 L280,205 L280,175 L340,175 L340,55 L220,55 Z M280,85 L310,85 L310,145 L280,145 L280,85 Z M370,55 L370,175 L430,175 L430,85 L460,85 L460,175 L490,175 L490,85 L520,85 L520,175 L550,175 L550,55 L370,55 Z" id="Shape" fill="#CB3837" fill-rule="nonzero"></path>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" points="70 175 130 175 130 85 160 85 160 175 190 175 190 55 70 55"></polygon>
+        <path d="M220,55 L220,205 L280,205 L280,175 L340,175 L340,55 L220,55 Z M310,145 L280,145 L280,85 L310,85 L310,145 Z" id="Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" points="370 55 370 175 430 175 430 85 460 85 460 175 490 175 490 85 520 85 520 175 550 175 550 55"></polygon>
+    </g>
+</svg>

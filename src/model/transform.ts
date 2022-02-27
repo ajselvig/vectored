@@ -118,8 +118,9 @@ export function parseTransform(s: string): TransformList {
                 list.push({type: 'matrix', a: vals[0], b: vals[1], c: vals[2], d: vals[3], tx: vals[4], ty: vals[5]})
                 break
             case 'scale':
-                if (vals.length != 2) {throw `"${comp}" must contain exactly 2 values`}
-                list.push({type: 'scale', x: vals[0], y: vals[1]})
+                if (vals.length > 2) {throw `"${comp}" must contain no more than values`}
+                const firstVal = vals[0]
+                list.push({type: 'scale', x: firstVal, y: vals[1]||firstVal})
                 break
             case 'translate':
                 if (vals.length != 2) {throw `"${comp}" must contain exactly 2 values`}

@@ -35,23 +35,39 @@ export function printVertex(v: Vertex): string {
 export type OpenOrClosed = 'open' | 'closed'
 
 /**
- * Internal representation of paths.
+ * Paths consist of a set of subpaths which are lists of vertices.
  */
-export type PathDef = StyledModelDef & {
+export type SubpathDef = {
     vertices: Vertex[]
     openOrClosed: OpenOrClosed
+}
+
+/**
+ * Internal representation of a path as a collection of subpaths.
+ */
+export type PathDef = StyledModelDef & {
+    subpaths: Array<SubpathDef>
+}
+
+export function printSubpathDef(def: SubpathDef): string {
+    const lines = ['  {']
+    for (let v of def.vertices) {
+        lines.push(`    ${printVertex(v)}`)
+    }
+    lines.push(`    ${def.openOrClosed}`)
+    lines.push('  }')
+    return lines.join("\n")
 }
 
 /**
  * @returns a nicely formatted string for the {PathDef}.
  */
 export function printPathDef(def: PathDef): string {
-    const lines = ['{']
-    for (let v of def.vertices) {
-        lines.push(`  ${printVertex(v)}`)
+    const lines = ['Path: [']
+    for (let subpath of def.subpaths) {
+        lines.push(printSubpathDef(subpath))
     }
-    lines.push(`  ${def.openOrClosed}`)
-    lines.push('}')
+    lines.push(']')
     return lines.join("\n")
 }
 
@@ -67,10 +83,10 @@ export default class Path extends StyledModel<PathDef, never> {
     render(parent: ModelRenderTag): void {
         const d = pathDef2d(this.def)
         let attrs: tuff.svg.PathTagAttrs = {d: d}
-        const style = this.computedStyle
         if (this.def.transforms) {
             attrs.transform = transforms2string(this.def.transforms)
         }
+        const style = this.computedStyle
         if (style) {
             this.applyStyle(attrs, style)
         }
@@ -83,9 +99,9 @@ export default class Path extends StyledModel<PathDef, never> {
  * Parses a raw points string into a path definition.
  * @param rawPoints a string containing space and/or comma-separated values
  * @param openOrClosed whether the path is open or closed
- * @returns a {PathDef} with point vertices for each point
+ * @returns a {SubpathDef} with point vertices for each point
  */
-export function points2Def(rawPoints: string, openOrClosed: OpenOrClosed): PathDef {
+export function points2Def(rawPoints: string, openOrClosed: OpenOrClosed): SubpathDef {
     const values = rawPoints.split(/[\s,]+/g).map(p => {return parseFloat(p)})
     const vertices = Array<Vertex>()
     for (let i=0; i<values.length; i+=2) {
@@ -103,14 +119,17 @@ export function points2Def(rawPoints: string, openOrClosed: OpenOrClosed): PathD
 /**
  * Parses a raw SVG path definition string into a PathDef object.
  * @param d an SVG path definition string
- * @returns a `PathDef` with vertices based on the raw definition string
+ * @returns a `PathDef` with subpaths based on the raw definition string
  */
 export function d2PathDef(d: string): PathDef {
     let vertex: Vertex = {
         point: vec.origin(),
         type: "point"
     }
-    let def: PathDef = {vertices: [], openOrClosed: "open"}
+    let subdef: SubpathDef = {vertices: [], openOrClosed: "open"}
+    const def: PathDef = {
+        subpaths: [subdef]
+    }
     let comps = d.trim().matchAll(/([A-Za-z])([\-\s\d\.,]*)/g) // split by command
 
     // pushes the current vertex onto the stack and starts a new one
@@ -132,7 +151,7 @@ export function d2PathDef(d: string): PathDef {
                 }
             }
             else { // no in control point
-                if (def.vertices.length == 0) { 
+                if (subdef.vertices.length == 0) { 
                     // this is the first vertex, assume it's symmetric
                     vertex.type = "symmetric"
                     // and compute the in control
@@ -155,7 +174,7 @@ export function d2PathDef(d: string): PathDef {
                 vertex.out = vec.mirror(vertex.in)
             }
         }
-        def.vertices.push(vertex)
+        subdef.vertices.push(vertex)
         vertex = {
             point: vec.dup(vertex.point),
             type: "point"
@@ -173,19 +192,41 @@ export function d2PathDef(d: string): PathDef {
         })
 
         switch (command) {
+            case 'A':
+            case 'a':
+                break
             case 'M':
             case 'm':
                 // assert(values.length == 1, `Move command must specify one point, not ${values.length}: ${values}`)
+                if (subdef.vertices.length > 1) {
+                    finishVertex('L')
+                    // the current subpath has at least two connected vertices, 
+                    // start a new subpath
+                    subdef.vertices.pop()
+                    subdef = {vertices: [vertex], openOrClosed: "open"}
+                    def.subpaths.push(subdef)
+                }
                 vertex.point = command=='M' ? vec.make(values) : vec.add(vertex.point, vec.make(values))
                 break
             case 'Z':
-                def.openOrClosed = 'closed'
+            case 'z':
+                subdef.openOrClosed = 'closed'
                 break
             case 'L':
             case 'l':
                 // assert(values.length == 1, `Line command must specify one point, not ${values.length}`)
                 finishVertex('L')
                 vertex.point = command=='L' ? vec.make(values) : vec.add(vertex.point, vec.make(values))
+                break
+            case 'H':
+            case 'h':
+                finishVertex('L') // same as starting a line
+                vertex.point = command=='H' ? vec.make(values[0], vertex.point.y) : vec.add(vertex.point, vec.make(values[0], 0))
+                break
+            case 'V':
+            case 'v':
+                finishVertex('L') // same as starting a line
+                vertex.point = command=='V' ? vec.make(vertex.point.x, values[0]) : vec.add(vertex.point, vec.make(0, values[0]))
                 break
             case 'C':
             case 'c':
@@ -216,7 +257,7 @@ export function d2PathDef(d: string): PathDef {
  */
 export function pathDef2d(def: PathDef): string {
     const comps: string[] = []
-    if (!def.vertices.length) {
+    if (!def.subpaths.length) {
         return "" // maybe we should raise here?
     }
 
@@ -225,31 +266,33 @@ export function pathDef2d(def: PathDef): string {
         comps.push(`${char} ` + vecs.map(v => {return `${v.x},${v.y}`}).join(' '))
     }
 
-    // move to the first vertex
-    const v0 = def.vertices[0]
-    if (v0.point.x || v0.point.y) {
+    // iterate over the subpaths
+    for (let subpath of def.subpaths) {
+
+        // move to the first vertex
+        const v0 = subpath.vertices[0]
         command('M', v0.point)
-    }
 
-    // iterate over each pair of vertices
-    for (let i=0; i<def.vertices.length-1; i++) {
-        const v1 = def.vertices[i]
-        const v2 = def.vertices[i+1]
-        if (!v1.out && !v2.in) {
-            // no control points in between the vertices, must be a line
-            command('L', v2.point)
+        // iterate over each pair of vertices
+        for (let i=0; i<subpath.vertices.length-1; i++) {
+            const v1 = subpath.vertices[i]
+            const v2 = subpath.vertices[i+1]
+            if (!v1.out && !v2.in) {
+                // no control points in between the vertices, must be a line
+                command('L', v2.point)
+            }
+            else {
+                // at least one control point, must be a curve
+                const c1 = vec.add(v1.out || vec.origin(), v1.point)
+                const c2 = vec.add(v2.in || vec.origin(), v2.point)
+                command('C', c1, c2, v2.point)
+            }
         }
-        else {
-            // at least one control point, must be a curve
-            const c1 = vec.add(v1.out || vec.origin(), v1.point)
-            const c2 = vec.add(v2.in || vec.origin(), v2.point)
-            command('C', c1, c2, v2.point)
-        }
-    }
 
-    // close the path
-    if (def.openOrClosed == 'closed') {
-        comps.push('Z')
+        // close the path
+        if (subpath.openOrClosed == 'closed') {
+            comps.push('Z')
+        }
     }
 
     return comps.join(' ')

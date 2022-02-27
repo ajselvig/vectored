@@ -1,7 +1,6 @@
 import * as box from '../geom/box'
 import { SvgParser } from '../io/svg-io'
 import Model, { IModel, ModelDef, ModelRenderTag } from './model'
-import { PaintServerDef } from './style'
 import Tile from './tile'
 
 type ProjectDef = ModelDef
@@ -102,9 +101,21 @@ export default class Project extends Model<ProjectDef, Tile> {
     // TODO: accept params for how to arrange tiles
     arrangeTiles() {
         let x = 0
+        let c = 0
+        let y = 0
+        let yNext = 0
+        const gap = 2*this.planeGridSize
+        const numCols = Math.ceil(Math.sqrt(this.count))
         this.eachOfType("tile", tile => {
-            tile.def.bounds = {...tile.def.bounds, x}
-            x = this.clampToPlaneGrid(x + tile.def.bounds.width + 2*this.planeGridSize)
-        })
+            tile.def.bounds = {...tile.def.bounds, x, y}
+            x = this.clampToPlaneGrid(x + tile.def.bounds.width + gap)
+            yNext = Math.max(yNext, this.clampToPlaneGrid(y + tile.def.bounds.height + gap))
+            c += 1
+            if (c >= numCols) {
+                c = 0
+                y = yNext
+                x = 0
+            }
+        }, {sorted: true})
     }
 }

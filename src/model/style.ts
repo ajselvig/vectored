@@ -136,6 +136,9 @@ export function parsePaintDef(raw: string): PaintDef | undefined {
                 throw `"${url}" is not a #-prefixed reference`
             }
         }
+        else if (comp == 'none' || comp == 'transparent') {
+            def.color = undefined
+        }
         else {
             def.color = parseColor(comp)
         }

@@ -1,13 +1,12 @@
 import Project from '../model/project'
 import Tile from '../model/tile'
 import * as tuff from 'tuff-core'
-import { IModel, ProjectDef } from '../model/model'
-import * as vec from '../geom/vec'
+import { IModel, ProjectDef, StyledModelDef } from '../model/model'
 import * as box from '../geom/box'
 import Group from '../model/group'
-import Path, { d2PathDef, OpenOrClosed, points2Def, printPathDef } from '../model/path'
+import Path, { d2PathDef, OpenOrClosed, PathDef, points2Def, printPathDef } from '../model/path'
 import {SaxesParser, SaxesTagPlain} from 'saxes'
-import { attributes2StyleDef, attrs2GradientStop, attrs2LinearGradientDef, attrs2RadialGradientDef, GradientStop, LinearGradientDef, PaintServerDef, RadialGradientDef } from '../model/style'
+import { attributes2StyleDef, attrs2GradientStop, attrs2LinearGradientDef, attrs2RadialGradientDef, LinearGradientDef, RadialGradientDef } from '../model/style'
 import { parseTransform } from '../model/transform'
 
 const log = new tuff.logging.Logger("SVG IO")
@@ -24,9 +23,6 @@ export class SvgParser {
     doc!: SVGSVGElement
 
     constructor(readonly raw: string) {
-        // const domParser = new window.DOMParser()
-        // this.doc = domParser.parseFromString(this.raw, 'image/svg+xml').documentElement as unknown as SVGSVGElement
-        // log.info(`Loaded raw SVG into a ${this.doc.tagName} element`)
     }
 
     currentGradient?: LinearGradientDef | RadialGradientDef
@@ -35,7 +31,10 @@ export class SvgParser {
         let rootTile: Tile|null = null
 
         const stack: IModel[] = []
-        let lastSkippedTag = ""
+        
+        // keep track of which tags are skipped on open so 
+        // we can also skip them on close
+        const skippedTags: Record<string, boolean> = {}
         
         // pushes a child to the stack and adds it to the previous parent
         const pushParent = (child: IModel) => {
@@ -66,6 +65,9 @@ export class SvgParser {
 
         parser.on("opentag", tag => {
             const tagName = tag.name.toLowerCase()
+            if (skippedTags[tagName]) {
+                return
+            }
             switch (tagName) {
                 case "svg":
                     pushParent(this.parseSvg(tag, project))
@@ -85,19 +87,25 @@ export class SvgParser {
                 case "lineargradient":
                     this.parseLinearGradient(tag.attributes, rootTile!)
                     break
+                case "radialgradient":
+                    this.parseRadialGradient(tag.attributes, rootTile!)
+                    break
                 case "stop":
                     this.parseGradientStop(tag.attributes)
                     break
                 default:
-                    lastSkippedTag = tagName
+                    skippedTags[tagName] = true
                     log.warn(`Skipping unsupported tag ${tagName}`)
             }
         })
 
         parser.on("closetag", tag => {
             const tagName = tag.name.toLowerCase()
-            if (lastSkippedTag == tagName) {
-                return // don't pop since we didn't push
+            if (skippedTags[tagName]) {
+                return
+            }
+            if (tagName.includes('gradient')) {
+                this.currentGradient = undefined
             }
             log.info(`Close ${tag.name} tag`)
             popParent()
@@ -126,7 +134,10 @@ export class SvgParser {
 
     parseGroup(tag: RawTag, project: Project): Group {
         log.info(`Parsing group`, tag.attributes)
-        return new Group(project)
+        const def = {}
+        this.parseTransforms(tag.attributes, def)
+        this.parseStyle(tag.attributes, def)
+        return new Group(project, def)
     }
 
     parsePolygon(tag: RawTag, project: Project, openOrClosed: OpenOrClosed) {
@@ -135,9 +146,11 @@ export class SvgParser {
             throw `Polygon/Polyline tag doesn't have a 'points' attribute!`
         }
         log.info(`Parsing polygon with with points "${points}"`, tag.attributes)
-        const def = points2Def(points, openOrClosed)
-        def.style = attributes2StyleDef(tag.attributes)
-        this.parseTransforms(tag, def)
+        const def: PathDef = {
+            subpaths: [points2Def(points, openOrClosed)]
+        }
+        this.parseTransforms(tag.attributes, def)
+        this.parseStyle(tag.attributes, def)
         const path = new Path(project, def)
         path.def = def
         return path
@@ -147,19 +160,26 @@ export class SvgParser {
         const d = tag.attributes["d"]!
         log.info(`Parsing path`, tag.attributes)
         const def = d2PathDef(d)
-        def.style = attributes2StyleDef(tag.attributes)
-        this.parseTransforms(tag, def)
+        this.parseTransforms(tag.attributes, def)
+        this.parseStyle(tag.attributes, def)
         const path = new Path(project, def)
         log.info(`Parsed path "${d}" to:`, printPathDef(path.def))
         return path
     }
 
-    parseTransforms(tag: RawTag, def: ProjectDef) {
-        if (tag.attributes['transform']) {
-            const transforms = parseTransform(tag.attributes['transform'])
+    parseTransforms(attrs: RawAttrs, def: ProjectDef) {
+        if (attrs['transform']) {
+            const transforms = parseTransform(attrs['transform'])
             if (transforms.length) {
                 def.transforms = transforms
             }
+        }
+    }
+
+    parseStyle(attrs: RawAttrs, def: StyledModelDef) {
+        const style = attributes2StyleDef(attrs)
+        if (style) {
+            def.style = style
         }
     }
 
@@ -170,7 +190,7 @@ export class SvgParser {
         tile.addPaintServer(this.currentGradient!)
     }
 
-    parseradialGradient(attrs: RawAttrs, tile: Tile) {
+    parseRadialGradient(attrs: RawAttrs, tile: Tile) {
         log.info("Parsing radial gradient", attrs)
         this.currentGradient = attrs2RadialGradientDef(attrs)
         tile.addPaintServer(this.currentGradient!)

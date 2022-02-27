@@ -112,8 +112,14 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
         }
     }
 
-    eachOfType<T extends ChildType>(type: ModelTypeName, fn: (child: T) => any) {
-        for (let child of this.children) {
+    eachOfType<T extends ChildType>(type: ModelTypeName, fn: (child: T) => any, options: {sorted: boolean} = {sorted: false}) {
+        let kids = this.children
+        if (options.sorted) {
+            kids = [...this.children].sort((a, b) => {
+                return (a.def.name || '').localeCompare(b.def.name || '')
+            })
+        }
+        for (let child of kids) {
             if (child.type == type) {
                 fn(child as T)
             }
