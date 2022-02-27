@@ -2,16 +2,19 @@ import Project from '../model/project'
 import Tile from '../model/tile'
 import * as tuff from 'tuff-core'
 import { IModel, ProjectDef } from '../model/model'
+import * as vec from '../geom/vec'
 import * as box from '../geom/box'
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, points2Def, printPathDef } from '../model/path'
 import {SaxesParser, SaxesTagPlain} from 'saxes'
-import { attributes2StyleDef } from '../model/style'
+import { attributes2StyleDef, attrs2GradientStop, attrs2LinearGradientDef, attrs2RadialGradientDef, GradientStop, LinearGradientDef, PaintServerDef, RadialGradientDef } from '../model/style'
 import { parseTransform } from '../model/transform'
 
 const log = new tuff.logging.Logger("SVG IO")
 
 type RawTag = SaxesTagPlain
+
+type RawAttrs = Record<string, string>
 
 /**
  * Parses a raw SVG document into a {Tile}.
@@ -25,6 +28,8 @@ export class SvgParser {
         // this.doc = domParser.parseFromString(this.raw, 'image/svg+xml').documentElement as unknown as SVGSVGElement
         // log.info(`Loaded raw SVG into a ${this.doc.tagName} element`)
     }
+
+    currentGradient?: LinearGradientDef | RadialGradientDef
 
     toTile(project: Project): Tile {
         let rootTile: Tile|null = null
@@ -76,6 +81,12 @@ export class SvgParser {
                     break
                 case "path":
                     pushParent(this.parsePath(tag, project))
+                    break
+                case "lineargradient":
+                    this.parseLinearGradient(tag.attributes, rootTile!)
+                    break
+                case "stop":
+                    this.parseGradientStop(tag.attributes)
                     break
                 default:
                     lastSkippedTag = tagName
@@ -150,6 +161,28 @@ export class SvgParser {
                 def.transforms = transforms
             }
         }
+    }
+
+
+    parseLinearGradient(attrs: RawAttrs, tile: Tile) {
+        log.info("Parsing linear gradient", attrs)
+        this.currentGradient = attrs2LinearGradientDef(attrs)
+        tile.addPaintServer(this.currentGradient!)
+    }
+
+    parseradialGradient(attrs: RawAttrs, tile: Tile) {
+        log.info("Parsing radial gradient", attrs)
+        this.currentGradient = attrs2RadialGradientDef(attrs)
+        tile.addPaintServer(this.currentGradient!)
+    }
+
+    parseGradientStop(attrs: RawAttrs) {
+        log.info("Parsing gradient stop", attrs)
+        if (!this.currentGradient) {
+            throw `Parsing a gradient stop with no current gradient!`
+        }
+        const stop = attrs2GradientStop(attrs)
+        this.currentGradient.stops.push(stop)
     }
 
 }

@@ -1,30 +1,91 @@
-import { Vec } from "../geom/vec"
+import * as vec from "../geom/vec"
 import Color from 'color'
+
+export type Attrs = Record<string, string>
 
 export type ColorDef = string
 
-export type GradiantStop = {
+export type GradientStop = {
     offset: number
     color: ColorDef
 }
 
-export type LinearGradiantDef = {
+type GradientUnits = 'userSpaceOnUse' | 'objectBoundingBox'
+
+type GradientSpreadMethod = 'pad' | 'reflect' | 'repeat'
+
+export type LinearGradientDef = {
+    id: string
     type: 'linear'
-    point1: Vec
-    point2: Vec
-    spreadMethod: 'pad' | 'reflect' | 'repeat'
-    stops: GradiantStop[]
+    point1: vec.Vec
+    point2: vec.Vec
+    spreadMethod: GradientSpreadMethod
+    units: GradientUnits
+    stops: GradientStop[]
 }
 
-export type RadialGradiantDef = {
+export type RadialGradientDef = {
+    id: string
     type: 'radial'
-    fromCenter: Vec
+    units: GradientUnits
+    fromCenter: vec.Vec
     fromRadius: number
-    toCenter: Vec
+    toCenter: vec.Vec
     toRadius: number
-    stops: GradiantStop[]
+    spreadMethod: GradientSpreadMethod
+    stops: GradientStop[]
 }
 
+export type PaintServerDef = LinearGradientDef | RadialGradientDef
+
+
+/**
+ * Parses a raw SVG attribute map into a {LinearGradientDef}.
+ * @param attrs raw string attributes
+ * @returns a linear gradient definition
+ */
+export function attrs2LinearGradientDef(attrs: Attrs): LinearGradientDef {
+    return {
+        type: 'linear',
+        units: (attrs['gradientUnits'] || 'userSpaceOnUse') as GradientUnits,
+        id: attrs['id']!,
+        stops: new Array<GradientStop>(),
+        spreadMethod: (attrs['spreadMethod'] || 'pad') as GradientSpreadMethod,
+        point1: vec.make(parseFloat(attrs['x1']), parseFloat(attrs['y1'])),
+        point2: vec.make(parseFloat(attrs['x2']), parseFloat(attrs['y2']))
+    }
+}
+
+/**
+ * Parses a raw SVG attribute map into a {RadialGradientDef}.
+ * @param attrs raw string attributes
+ * @returns a radial gradient definition
+ */
+export function attrs2RadialGradientDef(attrs: Attrs): RadialGradientDef {
+    return {
+        type: 'radial',
+        units: (attrs['gradientUnits'] || 'userSpaceOnUse') as GradientUnits,
+        id: attrs['id']!,
+        stops: new Array<GradientStop>(),
+        spreadMethod: (attrs['spreadMethod'] || 'pad') as GradientSpreadMethod,
+        fromCenter: vec.make(parseFloat(attrs['fx']), parseFloat(attrs['fy'])),
+        fromRadius: parseFloat(attrs['fr']),
+        toCenter: vec.make(parseFloat(attrs['cx']), parseFloat(attrs['cy'])),
+        toRadius: parseFloat(attrs['r'])
+    }
+}
+
+/**
+ * Parses a raw SVG attribute map into a {GradientStop}.
+ * @param attrs raw string attributes
+ * @returns a gradient stop
+ */
+export function attrs2GradientStop(attrs: Attrs): GradientStop {
+    return {
+        color: parseColor(attrs['stop-color']),
+        offset: parseFloat(attrs['offset']) || 0
+    }
+}
 export type PaintDef = {
     color?: ColorDef
     id?: string
