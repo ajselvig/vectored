@@ -24,8 +24,8 @@ export class Viewport extends tuff.parts.Part<Project> {
         
         // compute larger spans so that there's room to scroll,
         // with a minimum for small projects
-        const xSpan = Math.min(tilesBox.width*4, 1000)
-        const ySpan = Math.min(tilesBox.height*4, 1000)
+        const xSpan = Math.max(tilesBox.width*1.5, 1000)
+        const ySpan = Math.max(tilesBox.height*1.5, 1000)
         const tileCenter = box.center(tilesBox)
         const bounds = box.make(
             tileCenter.x - xSpan/2,

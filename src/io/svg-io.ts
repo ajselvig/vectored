@@ -95,7 +95,6 @@ export class SvgParser {
                     break
                 default:
                     skippedTags[tagName] = true
-                    log.warn(`Skipping unsupported tag ${tagName}`)
             }
         })
 
@@ -107,7 +106,6 @@ export class SvgParser {
             if (tagName.includes('gradient')) {
                 this.currentGradient = undefined
             }
-            log.info(`Close ${tag.name} tag`)
             popParent()
         })
 

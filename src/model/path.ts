@@ -3,6 +3,7 @@ import Project from "./project"
 import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
 import { transforms2string } from './transform'
+import svgpath from 'svgpath'
 
 const log = new tuff.logging.Logger("Path")
 
@@ -130,7 +131,6 @@ export function d2PathDef(d: string): PathDef {
     const def: PathDef = {
         subpaths: [subdef]
     }
-    let comps = d.trim().matchAll(/([A-Za-z])([\-\s\d\.,]*)/g) // split by command
 
     // pushes the current vertex onto the stack and starts a new one
     function finishVertex(nextCommand: 'L' | 'C' | undefined = undefined) {
@@ -181,16 +181,16 @@ export function d2PathDef(d: string): PathDef {
         }
     }
 
-    for (let comp of comps) {
-        const command = comp[1]
-        const rawValues = (comp[2] || '').trim()
-        
-        // an array of arrays of numbers for each point
-        log.debug("Parsing raw comp", rawValues)
-        const values = rawValues.split(/[\s,]+/g).map(rawVal => {
-            return parseFloat(rawVal)
-        })
+    // expand short curves and convert arcs to curves using svgpath
+    const svgPath = svgpath(d)
+        .unarc().unshort()
+    log.debug(`Optimized '${d}' to ${svgPath.toString()}`)
 
+    // iterate over the path segments and convert them into vertices
+    svgPath.iterate((segment) => {
+        const command = segment[0]
+        const values = segment.slice(1).map(v => {return v as number})
+        
         switch (command) {
             case 'A':
             case 'a':
@@ -214,9 +214,11 @@ export function d2PathDef(d: string): PathDef {
                 break
             case 'L':
             case 'l':
-                // assert(values.length == 1, `Line command must specify one point, not ${values.length}`)
-                finishVertex('L')
-                vertex.point = command=='L' ? vec.make(values) : vec.add(vertex.point, vec.make(values))
+                for (let i=0; i<values.length; i+=2) {
+                    finishVertex('L')
+                    const v = vec.slice(values, i)
+                    vertex.point = command=='L' ? v : vec.add(vertex.point, v)
+                }
                 break
             case 'H':
             case 'h':
@@ -243,7 +245,8 @@ export function d2PathDef(d: string): PathDef {
             default:
                 throw(`Invalid path command '${command}'`)
         }
-    }
+    })
+
     finishVertex()
     return def
 }

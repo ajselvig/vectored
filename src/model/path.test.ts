@@ -36,7 +36,7 @@ test("d line parsing", () => {
 })
 
 test("vertical and horizontal line parsing", () => {
-    let d = "V 1 H 1 V -1 Z"
+    let d = "M 0 0 V 1 H 1 V -1 Z"
     let def = d2PathDef(d)
     let subpath = def.subpaths[0]
     printDefs(d, def)
@@ -55,7 +55,7 @@ test("nested path parsing", () => {
 
 test("d curve parsing", () => {
     // single curve with default symmetric vertices
-    let d = "C 0,1 2,1 2,0"
+    let d = "M 0,0 C 0,1 2,1 2,0"
     let def = d2PathDef(d)
     printDefs(d, def)
     let subpath = def.subpaths[0]
@@ -71,10 +71,10 @@ test("d curve parsing", () => {
     expect(subpath.vertices[1].in).toMatchObject({x: 0, y: 1})
     expect(subpath.vertices[1].point).toMatchObject({x: 2, y: 0})
     expect(subpath.vertices[1].out).toMatchObject({x: -0, y: -1}) // extrapolated
-    expect(pathDef2d(def)).eq('M 0,0 ' + d) // re-generate the d
+    expect(pathDef2d(def)).eq(d) // re-generate the d
 
     // three curves with asymmetric and explicitly symmetric vertices
-    d = "C 0,2 1,4 3,4 C 6,4 6,2 6,0 C 6,-2 5,-3 3,-3"
+    d = "M 0,0 C 0,2 1,4 3,4 C 6,4 6,2 6,0 C 6,-2 5,-3 3,-3"
     def = d2PathDef(d)
     subpath = def.subpaths[0]
     printDefs(d, def)
@@ -83,10 +83,10 @@ test("d curve parsing", () => {
     expect(subpath.vertices[1].type).eq("asymmetric")
     expect(subpath.vertices[2].type).eq("symmetric") // explicit
     expect(subpath.vertices[3].type).eq("symmetric")
-    expect(pathDef2d(def)).eq('M 0,0 ' + d)
+    expect(pathDef2d(def)).eq(d)
 
     // a line followed by a curve should produce a disjoint vertex with no in control point
-    d = "L 0,1 C 1,2 2,2 3,1"
+    d = "M 0,0 L 0,1 C 1,2 2,2 3,1"
     def = d2PathDef(d)
     subpath = def.subpaths[0]
     printDefs(d, def)
@@ -95,10 +95,10 @@ test("d curve parsing", () => {
     expect(subpath.vertices[1].type).eq("disjoint")
     expect(subpath.vertices[1].in).toBeUndefined()
     expect(subpath.vertices[2].type).eq("symmetric")
-    expect(pathDef2d(def)).eq('M 0,0 ' + d)
+    expect(pathDef2d(def)).eq(d)
 
     // a curve followed by a line should produce a disjoint vertex with no in control point
-    d = "C 0,1 1,1 1,0 L 2,0"
+    d = "M 0,0 C 0,1 1,1 1,0 L 2,0"
     def = d2PathDef(d)
     subpath = def.subpaths[0]
     printDefs(d, def)
@@ -107,7 +107,7 @@ test("d curve parsing", () => {
     expect(subpath.vertices[1].type).eq("disjoint")
     expect(subpath.vertices[1].out).toBeUndefined()
     expect(subpath.vertices[2].type).eq("point")
-    expect(pathDef2d(def)).eq('M 0,0 ' + d)
+    expect(pathDef2d(def)).eq(d)
 
 
 })

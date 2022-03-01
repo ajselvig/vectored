@@ -21,6 +21,16 @@ export function make(xxy: number | Array<number>, y?: number): Vec {
     return {x: xxy, y: y!}
 }
 
+/** 
+ * Creates a new vector from the `index` and `index+1` elements of an array.
+ */
+export function slice(array: Array<number>, index: number): Vec {
+    if (array.length < index+1) {
+        throw `Trying to slice a vector out of a ${array.length}-element array at index ${index}`
+    }
+    return {x: array[index], y: array[index+1]}
+}
+
 /**
  * @returns a new identity vector.
  */
