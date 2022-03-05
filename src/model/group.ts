@@ -4,8 +4,9 @@ import Path from "./path"
 import Project from "./project"
 import { transforms2string } from './transform'
 import * as tuff from 'tuff-core'
+import Use from './use'
 
-export default class Group extends StyledModel<StyledModelDef, Path> {
+export default class Group extends StyledModel<StyledModelDef, Path|Use|Group> {
     
     constructor(readonly project: Project, def: StyledModelDef|{}, id?: string|null) {
         super('group', project, def, id)

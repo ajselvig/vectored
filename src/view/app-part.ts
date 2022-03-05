@@ -10,12 +10,12 @@ import viteUrl from '/assets/test/vite.svg'
 import npmUrl from '/assets/test/npm.svg'
 import svgUrl from '/assets/test/svg.svg'
 
-const urls = {
-    typescript: tsUrl,
-    vite: viteUrl,
-    npm: npmUrl,
-    svg: svgUrl
-}
+const urls = [
+    tsUrl,
+    viteUrl,
+    npmUrl,
+    svgUrl
+]
 
 tuff.logging.Logger.level = 'debug'
 const log = new tuff.logging.Logger("App")
@@ -32,8 +32,8 @@ export class AppPart extends tuff.parts.Part<{}> {
         log.info("Loading some demo tiles...")
         this.projectPart = this.makePart(ProjectPart, project)
         
-        for (let [name, url] of Object.entries(urls)) {
-            this.projectPart.fetchTile(name, url)
+        for (let url of urls) {
+            this.projectPart.fetchTile(url)
         }
 
         this.topBar = this.makeStatelessPart(TopBar)

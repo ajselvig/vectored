@@ -14,6 +14,8 @@ const log = new tuff.logging.Logger("SVG IO")
 
 type RawAttrs = Record<string, string>
 
+type ParseParent = {tag: string, model: IModel|null}
+
 /**
  * Parses a raw SVG document into a {Tile}.
  */
@@ -27,9 +29,13 @@ export class SvgParser {
     currentGradient?: LinearGradientDef | RadialGradientDef
 
     toTile(project: Project): Tile {
-        let rootTile: Tile|null = null
+        const stack = Array<ParseParent>()
+        
+        const tileStack = Array<Tile>()
 
-        const stack: IModel[] = []
+        const topTile = () => {
+            return tileStack[tileStack.length-1]
+        }
         
         // keep track of which tags are skipped on open so 
         // we can also skip them on close
@@ -39,29 +45,55 @@ export class SvgParser {
         const idMap: {[id: string]: IModel} = {}
         
         // pushes a child to the stack and adds it to the previous parent
-        const pushParent = (child: IModel) => {
-            if (stack.length) {
-                stack[stack.length-1].append(child)
-            }
-            else if (child.type == "tile") {
-                rootTile = child as Tile
-            }
-            else { // stack is empty and we're not trying to add an svg element
-                throw `Trying to add a "${child.type}" to an empty stack!`
-            }
-            stack.push(child)
+        const pushParent = (tag: string, model: IModel|null) => {
+            if (model) {
+                if (stack.length) {
+                    const parent = stack[stack.length-1]
+                    if (parent.model) {
+                        parent.model.append(model)
+                    }
+                    else {
+                        throw `Trying to append a ${model.type} model to a ${parent.tag} parent with no model!`
+                    }
+                }
+                else if (model.type == "tile") {
+                    // this will become the root tile
+                }
+                else { // stack is empty and we're not trying to add an svg element
+                    throw `Trying to add a "${tag}" to an empty stack!`
+                }
 
-            if (child.def.externId) {
-                idMap[child.def.externId] = child
+                if (model.type == 'tile') {
+                    tileStack.push(model as Tile)
+                }
+
+                if (model.def?.externId?.length) {
+                    idMap[model.def.externId] = model
+                }
             }
+            stack.push({tag, model})
         }
 
         // keep track of all use elements imported
         const uses = Array<Use>()
 
         // pops the latest parent from the stack
-        const popParent = () => {
-            return stack.pop()
+        const popParent = (tag: string) => {
+            const parent = stack[stack.length-1]
+            if (parent.tag == tag) {
+                stack.pop()
+                if (parent.model == topTile() && tileStack.length > 1) {
+                    tileStack.pop()
+                }
+            }
+            else {
+                throw `Popping tag ${tag} when the top of the stack is ${parent.tag}, this doesn't seem right!`
+            }
+        }
+
+        // peeks at the latest parent on the stack
+        const peekParent = () => {
+            return stack[stack.length-1]
         }
 
         // happy-dom does not support using DOMParser to parse XML documents:
@@ -77,38 +109,59 @@ export class SvgParser {
             if (skippedTags[tagName]) {
                 return
             }
+            const attrs = tag.attributes
+            let child: IModel|null = null
             switch (tagName) {
                 case "svg":
-                    pushParent(this.parseSvg(tag.attributes, project))
+                    child = this.parseSvg(attrs, project)
                     break
                 case "g":
-                    pushParent(this.parseGroup(tag.attributes, project))
+                    child = this.parseGroup(attrs, project)
                     break
                 case "polygon":
-                    pushParent(this.parsePolygon(tag.attributes, project, "closed"))
+                    child = this.parsePolygon(attrs, project, "closed")
                     break
                 case "polyline":
-                    pushParent(this.parsePolygon(tag.attributes, project, "open"))
+                    child = this.parsePolygon(attrs, project, "open")
                     break
                 case "path":
-                    pushParent(this.parsePath(tag.attributes, project))
+                    child = this.parsePath(attrs, project)
                     break
                 case "lineargradient":
-                    this.parseLinearGradient(tag.attributes, rootTile!)
+                    this.parseLinearGradient(attrs, topTile())
                     break
                 case "radialgradient":
-                    this.parseRadialGradient(tag.attributes, rootTile!)
+                    this.parseRadialGradient(attrs, topTile())
                     break
                 case "stop":
-                    this.parseGradientStop(tag.attributes)
+                    this.parseGradientStop(attrs)
+                    break
+                case "title":
+                    log.info(`title tag`, tag)
                     break
                 case "use":
-                    const use = this.parseUse(tag.attributes, project)
+                    const use = this.parseUse(attrs, project)
                     uses.push(use)
-                    pushParent(use)
+                    child = use
                     break
                 default:
                     skippedTags[tagName] = true
+                    return
+            }
+            pushParent(tagName, child)
+        })
+
+        parser.on("text", text => {
+            if (!text || !text.trim().length) {
+                return
+            }
+            const parent = peekParent()
+            if (parent.tag == 'title') {
+                log.info(`Assigning tile name '${text}'`)
+                topTile().def.name = text
+            }
+            else {
+                log.warn(`Don't know what to do with text for tag ${parent.tag}`, text)
             }
         })
 
@@ -120,11 +173,12 @@ export class SvgParser {
             if (tagName.includes('gradient')) {
                 this.currentGradient = undefined
             }
-            popParent()
+            popParent(tagName)
         })
 
         parser.write(this.raw).close()
 
+        const rootTile = tileStack[0]
         if (!rootTile) {
             throw `No root svg element in the document!`
         }
@@ -132,11 +186,11 @@ export class SvgParser {
 
         // assign the internal ids to all of the uses
         for (let use of uses) {
-            const id = use.def.href.replace('#', '')
+            const id = use.def.referenceId
             const model = idMap[id]
-            log.info(`use references ${id}, which maps to `, model)
-            if (model && model.def.externId) {
-                use.def.href = '#' + model.id
+            log.info(`<use> references ${id}, which maps to `, model)
+            if (model?.def?.externId) {
+                use.def.referenceId = model.id
             }
         }
 
@@ -204,8 +258,11 @@ export class SvgParser {
 
     parseUse(attrs: RawAttrs, project: Project): Use {
         log.info(`Parsing use tag`, attrs)
-        const href = attrs['xlink:href'] || attrs['href']
-        const def: UseDef = {href}
+        let referenceId = attrs['xlink:href'] || attrs['href']
+        if (referenceId?.length) {
+            referenceId = referenceId.replace('#', '')
+        }
+        const def: UseDef = {referenceId}
         this.parseBaseDef(attrs, def)
         this.parseTransforms(attrs, def)
         this.parseStyle(attrs, def)

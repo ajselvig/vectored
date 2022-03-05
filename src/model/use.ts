@@ -7,7 +7,7 @@ import { transforms2string } from "./transform"
 
 
 export type UseDef = StyledModelDef & {
-    href: string
+    referenceId: string
     x?: number
     y?: number
     width?: number
@@ -26,7 +26,7 @@ export default class Use extends StyledModel<UseDef, never> {
     render(parent: SvgParentTag): void {
         let attrs: tuff.svg.UseTagAttrs = {
             id: this.id,
-            href: this.def.href
+            href: '#' + this.def.referenceId
         }
         if (this.def.transforms) {
             attrs.transform = transforms2string(this.def.transforms)

@@ -6,12 +6,13 @@ import Project from './project'
 import * as tuff from 'tuff-core'
 import { PaintServerDef } from './style'
 import { DefsTag } from 'tuff-core/dist/svg'
+import Use from './use'
 
 export type TileDef = {
     bounds: box.Box
 } & ModelDef
 
-export default class Tile extends ProjectModel<TileDef, Path | Group> {
+export default class Tile extends ProjectModel<TileDef, Path | Group | Use> {
 
     constructor(readonly project: Project, def: TileDef, id?: string|null) {
         super('tile', project, def, id)

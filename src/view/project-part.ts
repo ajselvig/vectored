@@ -27,12 +27,16 @@ export class ProjectPart extends tuff.parts.Part<Project> {
         parent.part(this.settings)
     }
 
-    fetchTile(name: string, url: string) {
+    fetchTile(url: string) {
         fetch(url).then(res => {
             res.text().then(raw => {
-                log.info("Fetched svg", raw)
                 const tile = this.state.loadTile(raw)
-                tile.def.name = name
+                if (!tile.def.name?.length || tile.def.name.indexOf('tile')==0) {
+                    // it has a generated name, override it with the name from the url
+                    const comps = url.split('/')
+                    tile.def.name = comps[comps.length-1].split('.')[0]
+                }
+                log.info(`Loaded tile '${tile.def.name}' from ${url}`)
                 this.dirty()
                 this.state.arrangeTiles()
             })
