@@ -6,6 +6,7 @@ import Group from './group'
 import Path from './path'
 import { StyleDef, paintDef2string } from './style'
 import { TransformList } from './transform'
+import Use from './use'
 
 const log = new tuff.logging.Logger("Model")
 
@@ -22,6 +23,7 @@ interface ModelTypeMap {
     tile: Tile,
     group: Group
     path: Path
+    use: Use
 }
 
 /**
@@ -39,6 +41,7 @@ export type ModelRenderTag = tuff.svg.SvgParentTag
  */
 export type ModelDef = {
     name?: string
+    externId?: string
 }
 
 /**
@@ -173,7 +176,6 @@ export abstract class StyledModel<DefType extends StyledModelDef, ChildType exte
     }
 
     applyStyle(attrs: tuff.svg.SvgBaseAttrs, style: StyleDef) {
-        // TODO: handle non-string PaintDefs
         if (style.fill) {
             attrs.fill = paintDef2string(style.fill)
         }
@@ -182,6 +184,9 @@ export abstract class StyledModel<DefType extends StyledModelDef, ChildType exte
         }
         if (style.strokeWidth) {
             attrs.strokeWidth = style.strokeWidth
+        }
+        if (style.opacity != null) {
+            attrs.opacity = style.opacity
         }
     }
 

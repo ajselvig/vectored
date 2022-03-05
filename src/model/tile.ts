@@ -7,7 +7,7 @@ import * as tuff from 'tuff-core'
 import { PaintServerDef } from './style'
 import { DefsTag } from 'tuff-core/dist/svg'
 
-type TileDef = {
+export type TileDef = {
     bounds: box.Box
 } & ModelDef
 
@@ -42,7 +42,11 @@ export default class Tile extends ProjectModel<TileDef, Path | Group> {
 
     renderInHtml(parent: tuff.html.HtmlParentTag) {
         parent.svg(svg => {
-            svg.attrs({width: this.def.bounds.width, height: this.def.bounds.height})
+            svg.attrs({
+                id: this.id,
+                width: this.def.bounds.width, 
+                height: this.def.bounds.height
+            })
             this.render(svg)
         })
     }

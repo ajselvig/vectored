@@ -83,7 +83,10 @@ export default class Path extends StyledModel<PathDef, never> {
     
     render(parent: ModelRenderTag): void {
         const d = pathDef2d(this.def)
-        let attrs: tuff.svg.PathTagAttrs = {d: d}
+        let attrs: tuff.svg.PathTagAttrs = {
+            id: this.id,
+            d: d
+        }
         if (this.def.transforms) {
             attrs.transform = transforms2string(this.def.transforms)
         }

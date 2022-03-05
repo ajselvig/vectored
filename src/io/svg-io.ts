@@ -1,17 +1,16 @@
 import Project from '../model/project'
-import Tile from '../model/tile'
+import Tile, { TileDef } from '../model/tile'
 import * as tuff from 'tuff-core'
-import { IModel, ProjectDef, StyledModelDef } from '../model/model'
+import { IModel, ModelDef, ProjectDef, StyledModelDef } from '../model/model'
 import * as box from '../geom/box'
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, PathDef, points2Def, printPathDef } from '../model/path'
-import {SaxesParser, SaxesTagPlain} from 'saxes'
+import {SaxesParser} from 'saxes'
 import { attributes2StyleDef, attrs2GradientStop, attrs2LinearGradientDef, attrs2RadialGradientDef, LinearGradientDef, RadialGradientDef } from '../model/style'
 import { parseTransform } from '../model/transform'
+import Use, { UseDef } from '../model/use'
 
 const log = new tuff.logging.Logger("SVG IO")
-
-type RawTag = SaxesTagPlain
 
 type RawAttrs = Record<string, string>
 
@@ -35,6 +34,9 @@ export class SvgParser {
         // keep track of which tags are skipped on open so 
         // we can also skip them on close
         const skippedTags: Record<string, boolean> = {}
+
+        // map all document ids to the imported model objects
+        const idMap: {[id: string]: IModel} = {}
         
         // pushes a child to the stack and adds it to the previous parent
         const pushParent = (child: IModel) => {
@@ -48,7 +50,14 @@ export class SvgParser {
                 throw `Trying to add a "${child.type}" to an empty stack!`
             }
             stack.push(child)
+
+            if (child.def.externId) {
+                idMap[child.def.externId] = child
+            }
         }
+
+        // keep track of all use elements imported
+        const uses = Array<Use>()
 
         // pops the latest parent from the stack
         const popParent = () => {
@@ -70,19 +79,19 @@ export class SvgParser {
             }
             switch (tagName) {
                 case "svg":
-                    pushParent(this.parseSvg(tag, project))
+                    pushParent(this.parseSvg(tag.attributes, project))
                     break
                 case "g":
-                    pushParent(this.parseGroup(tag, project))
+                    pushParent(this.parseGroup(tag.attributes, project))
                     break
                 case "polygon":
-                    pushParent(this.parsePolygon(tag, project, "closed"))
+                    pushParent(this.parsePolygon(tag.attributes, project, "closed"))
                     break
                 case "polyline":
-                    pushParent(this.parsePolygon(tag, project, "open"))
+                    pushParent(this.parsePolygon(tag.attributes, project, "open"))
                     break
                 case "path":
-                    pushParent(this.parsePath(tag, project))
+                    pushParent(this.parsePath(tag.attributes, project))
                     break
                 case "lineargradient":
                     this.parseLinearGradient(tag.attributes, rootTile!)
@@ -92,6 +101,11 @@ export class SvgParser {
                     break
                 case "stop":
                     this.parseGradientStop(tag.attributes)
+                    break
+                case "use":
+                    const use = this.parseUse(tag.attributes, project)
+                    uses.push(use)
+                    pushParent(use)
                     break
                 default:
                     skippedTags[tagName] = true
@@ -116,53 +130,86 @@ export class SvgParser {
         }
         project.append(rootTile)
 
+        // assign the internal ids to all of the uses
+        for (let use of uses) {
+            const id = use.def.href.replace('#', '')
+            const model = idMap[id]
+            log.info(`use references ${id}, which maps to `, model)
+            if (model && model.def.externId) {
+                use.def.href = '#' + model.id
+            }
+        }
+
         return rootTile
     }
 
-    parseSvg(tag: RawTag, project: Project): Tile {
-        log.info(`Parsing ${tag.name} tag`, tag.attributes)
-        const viewBox = tag.attributes['viewBox'].split(/\s+/).map(n => {return parseFloat(n)})
+    parseBaseDef(attrs: RawAttrs, def: ModelDef) {
+        const id = attrs['id']
+        if (id && id.length) {
+            def.externId = id
+            def.name = id
+        }
+    }
+
+    parseSvg(attrs: RawAttrs, project: Project): Tile {
+        log.info(`Parsing svg tag`, attrs)
+        const viewBox = attrs['viewBox'].split(/\s+/).map(n => {return parseFloat(n)})
         if (viewBox.length != 4) {
             throw `Expect viewBox attribute to have 4 values, not ${viewBox.length}: ${viewBox}`
         }
         const bounds = box.make(viewBox)
-        const tile = new Tile(project, {bounds})
+        const def: TileDef = {bounds}
+        this.parseBaseDef(attrs, def)
+        const tile = new Tile(project, def)
         return tile
     }
 
-    parseGroup(tag: RawTag, project: Project): Group {
-        log.info(`Parsing group`, tag.attributes)
+    parseGroup(attrs: RawAttrs, project: Project): Group {
+        log.info(`Parsing group`, attrs)
         const def = {}
-        this.parseTransforms(tag.attributes, def)
-        this.parseStyle(tag.attributes, def)
+        this.parseBaseDef(attrs, def)
+        this.parseTransforms(attrs, def)
+        this.parseStyle(attrs, def)
         return new Group(project, def)
     }
 
-    parsePolygon(tag: RawTag, project: Project, openOrClosed: OpenOrClosed) {
-        const points = tag.attributes['points']
+    parsePolygon(attrs: RawAttrs, project: Project, openOrClosed: OpenOrClosed) {
+        const points = attrs['points']
         if (!points) {
             throw `Polygon/Polyline tag doesn't have a 'points' attribute!`
         }
-        log.info(`Parsing polygon with with points "${points}"`, tag.attributes)
+        log.info(`Parsing polygon with with points "${points}"`, attrs)
         const def: PathDef = {
             subpaths: [points2Def(points, openOrClosed)]
         }
-        this.parseTransforms(tag.attributes, def)
-        this.parseStyle(tag.attributes, def)
+        this.parseBaseDef(attrs, def)
+        this.parseTransforms(attrs, def)
+        this.parseStyle(attrs, def)
         const path = new Path(project, def)
         path.def = def
         return path
     }
 
-    parsePath(tag: RawTag, project: Project) {
-        const d = tag.attributes["d"]!
-        log.info(`Parsing path`, tag.attributes)
+    parsePath(attrs: RawAttrs, project: Project) {
+        const d = attrs["d"]!
+        log.info(`Parsing path`, attrs)
         const def = d2PathDef(d)
-        this.parseTransforms(tag.attributes, def)
-        this.parseStyle(tag.attributes, def)
+        this.parseBaseDef(attrs, def)
+        this.parseTransforms(attrs, def)
+        this.parseStyle(attrs, def)
         const path = new Path(project, def)
         log.info(`Parsed path "${d}" to:`, printPathDef(path.def))
         return path
+    }
+
+    parseUse(attrs: RawAttrs, project: Project): Use {
+        log.info(`Parsing use tag`, attrs)
+        const href = attrs['xlink:href'] || attrs['href']
+        const def: UseDef = {href}
+        this.parseBaseDef(attrs, def)
+        this.parseTransforms(attrs, def)
+        this.parseStyle(attrs, def)
+        return new Use(project, def)
     }
 
     parseTransforms(attrs: RawAttrs, def: ProjectDef) {

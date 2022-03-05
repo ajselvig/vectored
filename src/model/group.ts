@@ -13,7 +13,9 @@ export default class Group extends StyledModel<StyledModelDef, Path> {
 
     render(parent: ModelRenderTag): void {
         parent.g(group => {
-            let attrs: tuff.svg.SvgBaseAttrs = {}
+            let attrs: tuff.svg.SvgBaseAttrs = {
+                id: this.id
+            }
             if (this.def.transforms) {
                 attrs.transform = transforms2string(this.def.transforms)
             }

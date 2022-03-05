@@ -104,6 +104,7 @@ export type StyleDef = {
     strokeWidth?: number
     strokeLinecap?: 'butt' | 'round' | 'square';
     strokeLinejoin?: 'arcs' | 'bevel' | 'miter' | 'miter-clip' | 'round';
+    opacity?: number
 }
 
 /**
@@ -167,6 +168,11 @@ export function attributes2StyleDef(attrs: Record<string,string>): StyleDef | un
                 def ||= {}
                 def['strokeWidth'] = parseInt(v)
                 break
+            case 'opacity':
+                def ||= {}
+                def['opacity'] = parseFloat(v)
+                break
+
         }
     }
     return def
