@@ -1,4 +1,4 @@
-import { ModelRenderTag, StyledModel, StyledModelDef } from './model'
+import { ModelKey, ModelRenderTag, StyledModel, StyledModelDef } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
@@ -77,8 +77,8 @@ export function printPathDef(def: PathDef): string {
  */
 export default class Path extends StyledModel<PathDef, never> {
 
-    constructor(readonly project: Project, def: PathDef, id?: string) {
-        super('path', project, def, id)
+    constructor(readonly project: Project, def: PathDef, key?: ModelKey) {
+        super('path', project, def, key)
     }
     
     render(parent: ModelRenderTag): void {

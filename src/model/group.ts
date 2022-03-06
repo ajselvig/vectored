@@ -1,5 +1,5 @@
 
-import { StyledModelDef, ModelRenderTag, StyledModel } from './model'
+import { StyledModelDef, ModelRenderTag, StyledModel, ModelKey } from './model'
 import Path from "./path"
 import Project from "./project"
 import { transforms2string } from './transform'
@@ -8,8 +8,8 @@ import Use from './use'
 
 export default class Group extends StyledModel<StyledModelDef, Path|Use|Group> {
     
-    constructor(readonly project: Project, def: StyledModelDef|{}, id?: string|null) {
-        super('group', project, def, id)
+    constructor(readonly project: Project, def: StyledModelDef|{}, key?: ModelKey|null) {
+        super('group', project, def, key)
     }
 
     render(parent: ModelRenderTag): void {

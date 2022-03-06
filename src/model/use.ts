@@ -1,5 +1,5 @@
 import { SvgParentTag } from "tuff-core/dist/svg"
-import { StyledModelDef, StyledModel } from "./model"
+import { StyledModelDef, StyledModel, ModelKey } from "./model"
 import Project from "./project"
 import * as tuff from 'tuff-core'
 import { transforms2string } from "./transform"
@@ -19,8 +19,8 @@ export type UseDef = StyledModelDef & {
  */
 export default class Use extends StyledModel<UseDef, never> {
 
-    constructor(readonly project: Project, def: UseDef, id?: string) {
-        super('use', project, def, id)
+    constructor(readonly project: Project, def: UseDef, key?: ModelKey) {
+        super('use', project, def, key)
     }
 
     render(parent: SvgParentTag): void {

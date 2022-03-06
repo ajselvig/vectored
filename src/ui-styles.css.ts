@@ -297,7 +297,7 @@ export const tile = style({
 
 export const tileLabel = style({
     position: 'absolute',
-    fontSize: 14,
+    fontSize: 13,
     padding: 2,
     lineHeight: 1,
     top: -18,

@@ -11,14 +11,14 @@ import Use from './use'
 const log = new tuff.logging.Logger("Model")
 
 
-function generateId(): string {
-    return uuidv4()
+function generateKey(type: ModelTypeName): ModelKey {
+    return {type, id: uuidv4()}
 }
 
 /**
  * Maps model names to their classes.
  */
-interface ModelTypeMap {
+export interface ModelTypeMap {
     project: Project,
     tile: Tile,
     group: Group
@@ -45,11 +45,20 @@ export type ModelDef = {
 }
 
 /**
+ * A type/id pair used to identify a model instance.
+ */
+export type ModelKey = {
+    readonly type: ModelTypeName
+    readonly id: string
+}
+
+/**
  * Untyped interface for models.
  */
 export interface IModel {
-    readonly id: string
+    readonly key: ModelKey
     readonly type: ModelTypeName
+    readonly id: string
     project: Project
     append(child: IModel): void
     get(index: number): IModel | null
@@ -80,17 +89,25 @@ function nextCount(type: ModelTypeName): number {
  */
 export default abstract class Model<DefType extends ModelDef, ChildType extends IModel> {
 
-    readonly id: string
+    readonly key: ModelKey
     readonly children: Array<ChildType>
     abstract readonly project: Project
 
-    constructor(readonly type: ModelTypeName, 
-            public def: DefType, id?: string|null) {
-        if (id) {
-            this.id = id
+    get id(): string {
+        return this.key.id
+    }
+
+    get type(): ModelTypeName {
+        return this.key.type
+    }
+
+    constructor(type: ModelTypeName, 
+            public def: DefType, key?: ModelKey|null) {
+        if (key) {
+            this.key = key
         }
         else {
-            this.id = generateId()
+            this.key = generateKey(type)
         }
         const num = nextCount(type)
         def.name = `${this.type} ${num}`
@@ -147,8 +164,8 @@ export type ProjectDef = ModelDef & {
  */
 export abstract class ProjectModel<DefType extends ProjectDef, ChildType extends IModel> extends Model<DefType, ChildType> {
 
-    constructor(type: ModelTypeName, readonly project: Project, def: DefType, id?: string|null) {
-        super(type, def, id)
+    constructor(type: ModelTypeName, readonly project: Project, def: DefType, key?: ModelKey|null) {
+        super(type, def, key)
         this.project.register(this)
     }
 
@@ -164,8 +181,8 @@ export type StyledModelDef = ProjectDef & {
 
 export abstract class StyledModel<DefType extends StyledModelDef, ChildType extends IModel> extends ProjectModel<DefType, ChildType> {
 
-    constructor(type: ModelTypeName, readonly project: Project, def: DefType, id?: string|null) {
-        super(type, project, def, id)
+    constructor(type: ModelTypeName, readonly project: Project, def: DefType, key?: ModelKey|null) {
+        super(type, project, def, key)
     }
 
     /**

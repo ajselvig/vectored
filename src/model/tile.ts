@@ -1,5 +1,5 @@
 import Group from './group'
-import { ModelDef, ModelRenderTag, ProjectModel } from './model'
+import { ModelDef, ModelKey, ModelRenderTag, ProjectModel } from './model'
 import * as box from '../geom/box'
 import Path from './path'
 import Project from './project'
@@ -14,8 +14,8 @@ export type TileDef = {
 
 export default class Tile extends ProjectModel<TileDef, Path | Group | Use> {
 
-    constructor(readonly project: Project, def: TileDef, id?: string|null) {
-        super('tile', project, def, id)
+    constructor(readonly project: Project, def: TileDef, key?: ModelKey|null) {
+        super('tile', project, def, key)
     }
 
     place(xmin: number, ymin: number, width: number, height: number) {

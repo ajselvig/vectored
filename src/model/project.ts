@@ -1,6 +1,6 @@
 import * as box from '../geom/box'
 import { SvgParser } from '../io/svg-io'
-import Model, { IModel, ModelDef, ModelRenderTag } from './model'
+import Model, { IModel, ModelDef, ModelKey, ModelRenderTag, ModelTypeMap } from './model'
 import Tile from './tile'
 
 type ProjectDef = ModelDef
@@ -8,8 +8,8 @@ type ProjectDef = ModelDef
 export default class Project extends Model<ProjectDef, Tile> {
     readonly items: {[id: string]: IModel}
 
-    constructor(id?: string|null) {
-        super('project', {}, id)
+    constructor(key?: ModelKey|null) {
+        super('project', {}, key)
         this.items = {}
     }
 
@@ -22,12 +22,12 @@ export default class Project extends Model<ProjectDef, Tile> {
     }
 
     /**
-     * Globally looks up an item by id
-     * @param id the id of the item
+     * Globally looks up an item by key.
+     * @param key the key of the item
      * @returns the item
      */
-    find<T extends IModel>(id: string): T {
-        return this.items[id] as any as T
+    find<T extends ModelTypeMap>(key: ModelKey): T {
+        return this.items[key.id] as any as T
     }
 
     /**

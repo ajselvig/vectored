@@ -2,7 +2,7 @@
 import * as styles from '../ui-styles.css'
 import Project from "../model/project"
 import * as tuff from 'tuff-core'
-import { IModel } from '../model/model'
+import { IModel, ModelKey } from '../model/model'
 import Tile from '../model/tile'
 
 const log = new tuff.logging.Logger("Tree")
@@ -28,7 +28,7 @@ export class Tree extends tuff.parts.Part<Project> {
 
 }
 
-export const TreeItemClick = tuff.messages.typedKey<string>()
+export const TreeItemClick = tuff.messages.typedKey<ModelKey>()
 
 
 class TreeTilePart extends tuff.parts.Part<Tile> {
@@ -36,7 +36,7 @@ class TreeTilePart extends tuff.parts.Part<Tile> {
     init() {
         log.info(`Initializing tree tile event listeners for ${this.state.def.name}`)
         this.onClick(TreeItemClick, m => {
-            log.info(`Clicked tree item ${m.data}`)
+            log.info(`Clicked tree item`, m.data)
         })
     }
 
@@ -49,7 +49,7 @@ class TreeTilePart extends tuff.parts.Part<Tile> {
     renderItem(parent: tuff.parts.PartTag, model: IModel) {
         parent.div(styles.treeItem, item => {
             item.a(styles.treeItemSelf, self => {
-                self.emitClick(TreeItemClick, model.id)
+                self.emitClick(TreeItemClick, model.key)
                 if (model.type == 'tile') {
                     self.class(styles.header, styles.stickyTop)
                 }
