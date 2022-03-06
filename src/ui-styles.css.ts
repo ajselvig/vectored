@@ -30,7 +30,7 @@ const frameShadow = {
 
 /// Theme
 
-const fontFamily = 'Arial, Helvetica, sans-serif'
+const fontFamily = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif'
 
 const colors = {
     fg: '#222',
@@ -40,7 +40,11 @@ const colors = {
     plane: '#f8f8f8',
     planeGrid: '#ccc',
     pane: '#f0f0f0',
-    tool: '#2d2d2d'
+    tool: '#2d2d2d',
+    header: '#d8d8d8',
+    selection: '#d69338',
+    hoverBg: 'rgba(0, 0, 0, 0.1)',
+    activeBg: 'rgba(0, 0, 0, 0.2)'
 }
 
 const sizes = {
@@ -77,13 +81,28 @@ globalStyle('*', {
 })
 
 
+/// Typography
+
+export const header = style({
+    fontWeight: 'bold',
+    backgroundColor: colors.header,
+    textShadow: '0 1px 0 rgba(255, 255, 255, 0.5)'
+})
+
+
+/// Positioning
+
+export const stickyTop = style({
+    position: 'sticky',
+    top: 0
+})
+
+
 /// Links
 
 globalStyle('a', {
-    color: colors.button,
     cursor: 'pointer',
-    userSelect: 'none',
-    fontSize: sizes.font
+    userSelect: 'none'
 })
 
 export const button = style({
@@ -210,13 +229,45 @@ export const bottomBar = style({
 
 /// Tree
 
+const treeSizes = {
+    font: 15,
+    gap: 5
+}
+
 export const treeLayout = style({
     flex: `0 0 ${sizes.projectColumnWidth}px`,
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: colors.pane,
     zIndex: 1,
+    overflowX: 'scroll',
     ...frameShadow
+})
+
+export const treeItem = style({
+    flex: '0 0 auto',
+    lineHeight: 1
+})
+
+export const treeItemSelf = style({
+    display: 'flex',
+    gap: treeSizes.gap,
+    ':hover': {
+        backgroundColor: colors.hoverBg
+    },
+    ':active': {
+        backgroundColor: colors.activeBg
+    }
+})
+
+export const treeItemTitle = style({
+    flex: '1 1 auto',
+    fontSize: treeSizes.font,
+    padding: `${treeSizes.gap}px ${treeSizes.gap*2}px`
+})
+
+export const treeItemChildren = style({
+    paddingLeft: treeSizes.gap*3
 })
 
 
@@ -246,10 +297,10 @@ export const tile = style({
 
 export const tileLabel = style({
     position: 'absolute',
-    fontSize: 12,
+    fontSize: 14,
     padding: 2,
     lineHeight: 1,
-    top: -16,
+    top: -18,
     left: 0
 })
 

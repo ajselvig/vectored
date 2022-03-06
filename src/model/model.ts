@@ -53,6 +53,7 @@ export interface IModel {
     project: Project
     append(child: IModel): void
     get(index: number): IModel | null
+    each(fn: (child: IModel) => any): void
     count: number
     def: ModelDef
     render(parent: ModelRenderTag): void
@@ -93,7 +94,7 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
         }
         const num = nextCount(type)
         def.name = `${this.type} ${num}`
-        log.info(`New ${def.name}`)
+        log.debug(`New ${def.name}`)
         this.children = []
     }
 

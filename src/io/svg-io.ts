@@ -137,7 +137,7 @@ export class SvgParser {
                     this.parseGradientStop(attrs)
                     break
                 case "title":
-                    log.info(`title tag`, tag)
+                    log.debug(`title tag`, tag)
                     break
                 case "use":
                     const use = this.parseUse(attrs, project)
@@ -157,11 +157,14 @@ export class SvgParser {
             }
             const parent = peekParent()
             if (parent.tag == 'title') {
-                log.info(`Assigning tile name '${text}'`)
+                log.debug(`Assigning tile name '${text}'`)
                 topTile().def.name = text
             }
+            else if (parent.tag == 'svg') {
+                // don't really care, it's probably from a skipped meta tag
+            }
             else {
-                log.warn(`Don't know what to do with text for tag ${parent.tag}`, text)
+                log.warn(`Don't know what to do with text for tag ${parent.tag}: "${text}"`)
             }
         })
 
@@ -188,7 +191,7 @@ export class SvgParser {
         for (let use of uses) {
             const id = use.def.referenceId
             const model = idMap[id]
-            log.info(`<use> references ${id}, which maps to `, model)
+            log.debug(`<use> references ${id}, which maps to `, model)
             if (model?.def?.externId) {
                 use.def.referenceId = model.id
             }
@@ -206,7 +209,7 @@ export class SvgParser {
     }
 
     parseSvg(attrs: RawAttrs, project: Project): Tile {
-        log.info(`Parsing svg tag`, attrs)
+        log.debug(`Parsing svg tag`, attrs)
         const viewBox = attrs['viewBox'].split(/\s+/).map(n => {return parseFloat(n)})
         if (viewBox.length != 4) {
             throw `Expect viewBox attribute to have 4 values, not ${viewBox.length}: ${viewBox}`
@@ -219,7 +222,7 @@ export class SvgParser {
     }
 
     parseGroup(attrs: RawAttrs, project: Project): Group {
-        log.info(`Parsing group`, attrs)
+        log.debug(`Parsing group`, attrs)
         const def = {}
         this.parseBaseDef(attrs, def)
         this.parseTransforms(attrs, def)
@@ -232,7 +235,7 @@ export class SvgParser {
         if (!points) {
             throw `Polygon/Polyline tag doesn't have a 'points' attribute!`
         }
-        log.info(`Parsing polygon with with points "${points}"`, attrs)
+        log.debug(`Parsing polygon with with points "${points}"`, attrs)
         const def: PathDef = {
             subpaths: [points2Def(points, openOrClosed)]
         }
@@ -246,18 +249,18 @@ export class SvgParser {
 
     parsePath(attrs: RawAttrs, project: Project) {
         const d = attrs["d"]!
-        log.info(`Parsing path`, attrs)
+        log.debug(`Parsing path`, attrs)
         const def = d2PathDef(d)
         this.parseBaseDef(attrs, def)
         this.parseTransforms(attrs, def)
         this.parseStyle(attrs, def)
         const path = new Path(project, def)
-        log.info(`Parsed path "${d}" to:`, printPathDef(path.def))
+        log.debug(`Parsed path "${d}" to:`, printPathDef(path.def))
         return path
     }
 
     parseUse(attrs: RawAttrs, project: Project): Use {
-        log.info(`Parsing use tag`, attrs)
+        log.debug(`Parsing use tag`, attrs)
         let referenceId = attrs['xlink:href'] || attrs['href']
         if (referenceId?.length) {
             referenceId = referenceId.replace('#', '')
@@ -285,21 +288,20 @@ export class SvgParser {
         }
     }
 
-
     parseLinearGradient(attrs: RawAttrs, tile: Tile) {
-        log.info("Parsing linear gradient", attrs)
+        log.debug("Parsing linear gradient", attrs)
         this.currentGradient = attrs2LinearGradientDef(attrs)
         tile.addPaintServer(this.currentGradient!)
     }
 
     parseRadialGradient(attrs: RawAttrs, tile: Tile) {
-        log.info("Parsing radial gradient", attrs)
+        log.debug("Parsing radial gradient", attrs)
         this.currentGradient = attrs2RadialGradientDef(attrs)
         tile.addPaintServer(this.currentGradient!)
     }
 
     parseGradientStop(attrs: RawAttrs) {
-        log.info("Parsing gradient stop", attrs)
+        log.debug("Parsing gradient stop", attrs)
         if (!this.currentGradient) {
             throw `Parsing a gradient stop with no current gradient!`
         }

@@ -33,7 +33,7 @@ export class Viewport extends tuff.parts.Part<Project> {
             xSpan,
             ySpan
         )
-        log.info("Bounds:", bounds)
+        log.debug("Rendering viewport with bounds:", bounds)
 
         // compute a transform from viewport to plane space
         this.viewportToPlane = mat.translate(mat.identity(), vec.make(-bounds.x, -bounds.y))
