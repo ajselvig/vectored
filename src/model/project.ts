@@ -1,16 +1,20 @@
 import * as box from '../geom/box'
 import { SvgParser } from '../io/svg-io'
-import Model, { IModel, ModelDef, ModelKey, ModelRenderTag, ModelTypeMap } from './model'
+import Model, { IModel, ModelDef, ModelKey, ModelRenderTag} from './model'
 import Tile from './tile'
+import Selection from '../ui/selection'
 
 type ProjectDef = ModelDef
 
 export default class Project extends Model<ProjectDef, Tile> {
     readonly items: {[id: string]: IModel}
 
+    readonly selection: Selection
+
     constructor(key?: ModelKey|null) {
         super('project', {}, key)
         this.items = {}
+        this.selection = new Selection()
     }
 
     get project(): Project {
@@ -26,7 +30,7 @@ export default class Project extends Model<ProjectDef, Tile> {
      * @param key the key of the item
      * @returns the item
      */
-    find<T extends ModelTypeMap>(key: ModelKey): T {
+    find<T extends IModel>(key: ModelKey): T {
         return this.items[key.id] as any as T
     }
 

@@ -42,9 +42,9 @@ const colors = {
     pane: '#f0f0f0',
     tool: '#2d2d2d',
     header: '#d8d8d8',
-    selection: '#d69338',
-    hoverBg: 'rgba(0, 0, 0, 0.1)',
-    activeBg: 'rgba(0, 0, 0, 0.2)'
+    selection: '#f3a536',
+    hoverBg: 'rgba(0, 0, 0, 0.06)',
+    activeBg: 'rgba(0, 0, 0, 0.12)'
 }
 
 const sizes = {
@@ -257,6 +257,16 @@ export const treeItemSelf = style({
     },
     ':active': {
         backgroundColor: colors.activeBg
+    }
+})
+
+export const treeItemSelected = style({
+    backgroundColor: colors.selection,
+    ':hover': {
+        backgroundColor: colors.selection
+    },
+    ':active': {
+        backgroundColor: colors.selection
     }
 })
 
