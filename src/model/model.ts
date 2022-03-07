@@ -110,8 +110,9 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
             this.key = generateKey(type)
         }
         const num = nextCount(type)
-        def.name = `${this.type} ${num}`
-        log.debug(`New ${def.name}`)
+        if (!def.name?.length) {
+            def.name = `${this.type} ${num}`
+        }
         this.children = []
     }
 
