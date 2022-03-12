@@ -1,8 +1,7 @@
 export {}
 
-// import {optimize} from 'svgo'
+import {optimize} from 'svgo'
 import * as fs from 'fs'
-// import * as path from 'path'
 import * as tuff from 'tuff-core'
 const strings = tuff.strings
 
@@ -65,8 +64,11 @@ for (let file of files) {
         const name = file.replace('.svg', '')
         const outName = `${name}.${theme}.svg`
         const outPath = `${iconsDir}/gen/${outName}`
-        log('Writing', outPath)
-        fs.writeFileSync(outPath, themeRaw, {encoding: 'utf8'})
+        log('Optimizing', outPath)
+        const optResult = optimize(themeRaw, {path: outPath})
+        if (optResult.error) {
+            throw(optResult.error)
+        }
         const camelName = camelCase(name)
         iconDefs.push({
             path: outPath.slice(1), // remove the leading period

@@ -236,6 +236,8 @@ export const topBarIconButton = style({
     flex: `0 0 ${sizes.barHeight}px`,
     fontSize: 0,
     userSelect: 'none',
+    textAlign: 'center',
+    padding: `${(sizes.barHeight-sizes.lineHeight)/2}px`,
     ...scalePush
 })
 
