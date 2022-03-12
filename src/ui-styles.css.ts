@@ -50,12 +50,12 @@ const colors = {
 const sizes = {
     pad: 12,
     font: 16,
+    lineHeight: 24,
+    barHeight: 48,
     fieldHeight: 32,
     borderRadius: 4,
     formWidth: 420,
-    projectColumnWidth: 200,
-    topBar: 48,
-    bottomBar: 24
+    projectColumnWidth: 200
 }
 
 
@@ -137,6 +137,14 @@ export const flex = {
 }
 
 
+/// Icons
+
+export const lineIcon = style({
+    height: `${sizes.lineHeight}px`,
+    width: `${sizes.lineHeight}px`
+})
+
+
 /// Inputs
 
 globalStyle('input, textarea', {
@@ -210,9 +218,30 @@ export const projectLayout = style({
 export const topBar = style({
     backgroundColor: colors.tool,
     display: 'flex',
-    flex: `0 0 ${sizes.topBar}px`,
+    flex: `0 0 ${sizes.barHeight}px`,
     zIndex: 1,
+    alignItems: 'center',
     ...frameShadow
+})
+
+export const topBarLogo = style({
+    flex: '1 1 auto',
+    fontSize: sizes.font,
+    fontWeight: 'bold',
+    padding: sizes.pad,
+    color: colors.plane
+})
+
+export const topBarIconButton = style({
+    flex: `0 0 ${sizes.barHeight}px`,
+    fontSize: 0,
+    userSelect: 'none',
+    ...scalePush
+})
+
+globalStyle('a svg', {
+    height: `${sizes.lineHeight}px`,
+    width: `${sizes.lineHeight}px`
 })
 
 
@@ -221,7 +250,7 @@ export const topBar = style({
 export const bottomBar = style({
     backgroundColor: colors.tool,
     display: 'flex',
-    flex: `0 0 ${sizes.bottomBar}px`,
+    flex: `0 0 ${sizes.lineHeight}px`,
     zIndex: 1,
     ...frameShadow
 })
@@ -273,7 +302,7 @@ export const treeItemSelected = style({
 export const treeItemTitle = style({
     flex: '1 1 auto',
     fontSize: treeSizes.font,
-    padding: `${treeSizes.gap}px ${treeSizes.gap*2}px`
+    padding: `${treeSizes.gap}px ${treeSizes.gap*2}px ${treeSizes.gap-1}px ${treeSizes.gap*2}px`
 })
 
 export const treeItemChildren = style({

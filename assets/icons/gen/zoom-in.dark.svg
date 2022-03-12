@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>zoom-in</title>
+    <g id="zoom-in" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(25.756097, 25.756097) rotate(-45.000000) translate(-25.756097, -25.756097) translate(9.756097, 1.795942)" fill="#222222">
+            <circle id="Oval" stroke="#222222" stroke-width="4" fill-opacity="0.24961757" cx="16" cy="16" r="14"></circle>
+            <path d="M14.208645,31.637106 L12.9612506,35.8613571 C12.9340981,35.9533078 12.9203102,36.0486854 12.9203102,36.1445613 L12.9203102,46.9203102 C12.9203102,47.472595 13.3680255,47.9203102 13.9203102,47.9203102 L17.9203102,47.9203102 C18.472595,47.9203102 18.9203102,47.472595 18.9203102,46.9203102 L18.9203102,36.1445613 C18.9203102,36.0486854 18.9065223,35.9533078 18.8793699,35.8613571 L17.6319754,31.637106 C17.5064571,31.2120431 17.1161238,30.9203102 16.6729158,30.9203102 L15.1677046,30.9203102 C14.7244966,30.9203102 14.3341634,31.2120431 14.208645,31.637106 Z" id="Path"></path>
+        </g>
+        <g id="Group-2" transform="translate(12.000000, 12.000000)" fill="#222222">
+            <rect id="Rectangle" x="6" y="0" width="4" height="16" rx="2"></rect>
+            <rect id="Rectangle-Copy" transform="translate(8.000000, 8.000000) rotate(90.000000) translate(-8.000000, -8.000000) " x="6" y="0" width="4" height="16" rx="2"></rect>
+        </g>
+    </g>
+</svg>

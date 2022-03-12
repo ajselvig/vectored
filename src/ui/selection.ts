@@ -33,6 +33,13 @@ export default class Selection {
     }
 
     /**
+     * @returns the number of items in the selection
+     */
+    count() {
+        return Object.keys(this.items).length
+    }
+
+    /**
      * @param key a model key
      * @returns true if the item with the given key is selected
      */
