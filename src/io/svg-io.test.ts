@@ -46,5 +46,5 @@ test("svg parsing", () => {
     // svg
 
     const svgTile = project.loadTile(svgSvg)
-    expect(svgTile.count).eq(3) // should be 2 because the first g is in defs
+    expect(svgTile.count).eq(6)
 })

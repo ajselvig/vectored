@@ -28,3 +28,17 @@ test("matrix scaling", () => {
     expect(v1.x).approximately(2, epsilon)
     expect(v1.y).approximately(3, epsilon)
 })
+
+test("matrix builder", () => {
+    const builder = mat.builder()
+        .translate(1, 2)
+        .rotate(30)
+        .scale(0.9)
+        .translate(-0.5, 1.5)
+    const v = vec.make(3, -4)
+    const v1 = mat.transform(
+        builder.buildInverse(),
+        mat.transform(builder.build(), v)
+    )
+    expect(v1).toMatchObject(v)
+})

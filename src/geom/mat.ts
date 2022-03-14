@@ -72,7 +72,7 @@ export function translate(m: Mat, vx: vec.Vec|number, y?: number): Mat {
 
 
 /**
- * @returns matrix `m` rotated by `angle` radians.
+ * @returns matrix `m` rotated by `angle` degrees.
  */
 export const rotate = (m: Mat, angle: number): Mat => {
     const cos = trig.cos(angle)
@@ -121,4 +121,79 @@ export const transformBox = (m: Mat, b: box.Box): box.Box => {
     upperLeft = transform(m, upperLeft)
     lowerRight = transform(m, lowerRight)
     return box.make(upperLeft.x, upperLeft.y, lowerRight.x-upperLeft.x, lowerRight.y-upperLeft.y)
+}
+
+
+/**
+ * A builder that composes transformations to generate matrices (and their inverses).
+ */
+class Builder {
+    private steps: Array<(mat: Mat) => Mat> = []
+    private inverseSteps: Array<(mat: Mat) => Mat> = []
+
+    /**
+     * Translate the transformation by the given amount.
+     */
+    translate(x: number|vec.Vec, y?: number) {
+        if (typeof x == 'object') {
+            this.steps.push(m => translate(m, x))
+            this.inverseSteps.unshift(m => translate(m, -x.x, -x.y))
+        }
+        else {
+            this.steps.push(m => translate(m, x, y||0))
+            this.inverseSteps.unshift(m => translate(m, -x, -(y||0)))
+        }
+        return this
+    }
+
+    /**
+     * Rotates the transformation by the given amount.
+     */
+    rotate(deg: number) {
+        this.steps.push(m => rotate(m, deg))
+        this.inverseSteps.unshift(m => rotate(m, -deg))
+        return this
+    }
+
+    /**
+     * Scales the transformation by the given amount.
+     */
+    scale(factor: number) {
+        this.steps.push(m => scale(m, factor))
+        this.inverseSteps.unshift(m => scale(m, 1/factor))
+        return this
+    }
+
+    /**
+     * Builds the matrix.
+     */
+    build(): Mat {
+        let m = identity()
+        for (let step of this.steps) {
+            m = step(m)
+        }
+        return m
+    }
+
+    /**
+     * Builds the inverse of the given steps.
+     * @returns the inverse transformation matrix
+     */
+    buildInverse(): Mat {
+        let m = identity()
+        for (let step of this.inverseSteps) {
+            m = step(m)
+        }
+        return m
+    }
+
+}
+
+
+
+/**
+ * Creates a builder that composes transformations to generate matrices (and their inverses).
+ */
+export function builder(): Builder {
+    return new Builder()
 }

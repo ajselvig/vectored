@@ -19,6 +19,7 @@ export class Viewport extends tuff.parts.Part<Project> {
     tileParts: {[id: string]: TilePart} = {}
 
     planeVirtualToActual = mat.identity()
+    planeActualToVirtual = mat.identity()
 
     zoom: number = 1
 
@@ -40,10 +41,10 @@ export class Viewport extends tuff.parts.Part<Project> {
 
     computeMetrics(elem: HTMLDivElement) {
         log.info("Compute Metrics", elem)
-        const scrollOffset = vec.make(elem.scrollLeft, elem.scrollTop)
-        log.info("scroll offset: ", scrollOffset)
-        const paneOffset = mat.transform(this.planeVirtualToActual, scrollOffset)
-        log.info("pane offset: ", paneOffset)
+        const actualBox = box.make(elem.scrollLeft, elem.scrollTop, elem.clientWidth, elem.clientHeight)
+        const virtualBox = mat.transformBox(this.planeActualToVirtual, actualBox)
+        log.info("virtual box", virtualBox)
+
     }
 
     zoomIn() {
@@ -78,8 +79,12 @@ export class Viewport extends tuff.parts.Part<Project> {
         )
         log.debug("Rendering viewport with bounds:", bounds)
 
-        // compute a transform from viewport to plane space
-        this.planeVirtualToActual = mat.scale(mat.translate(mat.identity(), vec.make(-bounds.x, -bounds.y)), this.zoom)
+        // compute transforms between actual and virtual plane space
+        const builder = mat.builder()
+            .translate(-bounds.x, -bounds.y)
+            .scale(this.zoom)
+        this.planeVirtualToActual = builder.build()
+        this.planeActualToVirtual = builder.buildInverse()
         
         const parts = this.tileParts
         const gridSize = this.state.planeGridSize
