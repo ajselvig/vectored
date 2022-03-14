@@ -336,6 +336,11 @@ export const tile = style({
     ...absoluteFill
 })
 
+export const tileSvg = style({
+    width: '100%',
+    height: '100%'
+})
+
 export const tileLabel = style({
     position: 'absolute',
     fontSize: 13,

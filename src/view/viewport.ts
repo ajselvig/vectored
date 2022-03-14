@@ -8,16 +8,59 @@ import * as vec from '../geom/vec'
 
 const log = new tuff.logging.Logger("Viewport")
 
+export const minZoom = 0.1
+export const maxZoom = 10
+export const zoomStep = 0.25
+
+export const zoomInKey = tuff.messages.untypedKey()
+export const zoomOutKey = tuff.messages.untypedKey()
+
 export class Viewport extends tuff.parts.Part<Project> {
     tileParts: {[id: string]: TilePart} = {}
 
-    viewportToPlane = mat.identity()
+    planeVirtualToActual = mat.identity()
+
+    zoom: number = 1
+
+    scrollKey!: tuff.messages.UntypedKey
 
     init() {
+        this.scrollKey = tuff.messages.untypedKey()
+        this.onClick(zoomInKey, _ => {
+            this.zoomIn()
+        }, "passive")
+        this.onClick(zoomOutKey, _ => {
+            this.zoomOut()
+        }, "passive")
+
+        this.onScroll(this.scrollKey, m => {
+            this.computeMetrics(m.event.target! as HTMLDivElement)
+        })
+    }
+
+    computeMetrics(elem: HTMLDivElement) {
+        log.info("Compute Metrics", elem)
+        const scrollOffset = vec.make(elem.scrollLeft, elem.scrollTop)
+        log.info("scroll offset: ", scrollOffset)
+        const paneOffset = mat.transform(this.planeVirtualToActual, scrollOffset)
+        log.info("pane offset: ", paneOffset)
+    }
+
+    zoomIn() {
+        this.zoom = Math.min(this.zoom + zoomStep, maxZoom)
+        log.info(`Zoom in to ${this.zoom}`)
+        this.dirty()
+    }
+
+    zoomOut() {
+        this.zoom = Math.max(this.zoom - zoomStep, minZoom)
+        log.info(`Zoom out to ${this.zoom}`)
+        this.dirty()
     }
     
     render(parent: tuff.parts.PartTag) {
         parent.class(styles.viewport)
+        parent.emitScroll(this.scrollKey)
 
         // compute the plane size based on the bounding box of the tiles
         const tilesBox = this.state.boundingBox
@@ -36,7 +79,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         log.debug("Rendering viewport with bounds:", bounds)
 
         // compute a transform from viewport to plane space
-        this.viewportToPlane = mat.translate(mat.identity(), vec.make(-bounds.x, -bounds.y))
+        this.planeVirtualToActual = mat.scale(mat.translate(mat.identity(), vec.make(-bounds.x, -bounds.y)), this.zoom)
         
         const parts = this.tileParts
         const gridSize = this.state.planeGridSize
@@ -47,7 +90,7 @@ export class Viewport extends tuff.parts.Part<Project> {
                     parts[tile.id] = this.makePart(TilePart, tile)
                 }
                 // make a container for the tile at the correct size and position
-                const tileBox = mat.transformBox(this.viewportToPlane, tile.def.bounds)
+                const tileBox = mat.transformBox(this.planeVirtualToActual, tile.def.bounds)
                 plane.div(styles.tileContainer, tileContainer => {
                     tileContainer.part(parts[tile.id])
                 }).css({
