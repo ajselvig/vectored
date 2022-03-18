@@ -38,6 +38,7 @@ export class ProjectPart extends tuff.parts.Part<Project> {
                 }
                 log.info(`Loaded tile '${tile.def.name}' from ${url}`)
                 this.state.arrangeTiles()
+                this.viewport.centerOnContent()
                 this.dirty()
             })
             

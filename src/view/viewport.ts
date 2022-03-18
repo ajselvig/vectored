@@ -30,8 +30,6 @@ export class Viewport extends tuff.parts.Part<Project> {
 
     viewportSize!: vec.Vec
 
-    zoom: number = 1
-
     scrollKey!: tuff.messages.UntypedKey
 
     selection!: Selection
@@ -60,24 +58,74 @@ export class Viewport extends tuff.parts.Part<Project> {
     update(elem: HTMLElement): void {
         log.info("Update", elem)
         const scroller = elem.getElementsByClassName(styles.viewportScroller)[0]
+
+        // if tmpCenter is set, update the scroll position to center on it
+        if (this.tmpCenter) {
+            const actualCenter = mat.transform(this.planeVirtualToActual, this.tmpCenter)
+            scroller.scrollLeft =  actualCenter.x - this.viewportSize.x/2
+            scroller.scrollTop = actualCenter.y - this.viewportSize.y/2
+            log.info(`Updating scroll position to ${scroller.scrollLeft},${scroller.scrollTop} based on tmpCenter`, this.tmpCenter)
+            this.tmpCenter = undefined
+        }
+
+        // compute the metrics used to create the overlay transform
         const actualBox = box.make(scroller.scrollLeft, scroller.scrollTop, scroller.clientWidth, scroller.clientHeight)
         this.virtualBox = mat.transformBox(this.planeActualToVirtual, actualBox)
+        this.lastCenter = box.center(this.virtualBox)
         this.planeVirtualToViewport = mat.translate(this.planeVirtualToActual, -scroller.scrollLeft/this.zoom, -scroller.scrollTop/this.zoom)
         this.viewportSize = vec.make(scroller.clientWidth, scroller.clientHeight)
         this.drawOverlay()
     }
 
+
+    /// Zoom / Centering
+
+    zoom: number = 1
+
+    /**
+     * Temporarily store the center of the viewport that will be 
+     * used for the next update then discarded.
+     */
+    private tmpCenter?: vec.Vec
+
+    /**
+     * Store the center of the viewport (in plane virtual space)
+     * after every update so that it can be used by rememberCenter().
+     */
+    private lastCenter?: vec.Vec
+
+    /**
+     * Assign the last center as `tmpCenter` so that it will be restored on the next `update()`.
+     */
+    rememberCenter() {
+        this.tmpCenter = this.lastCenter
+    }
+
+    /**
+     * Sets `tmpCenter` to the center of the actual content.
+     */
+    centerOnContent() {
+        const tilesBox = this.state.boundingBox
+        this.tmpCenter = box.center(tilesBox)
+        log.info(`Centering on content at`, this.tmpCenter)
+    }
+
     zoomIn() {
         this.zoom = Math.min(this.zoom + zoomStep, maxZoom)
         log.info(`Zoom in to ${this.zoom}`)
+        this.rememberCenter()
         this.dirty()
     }
 
     zoomOut() {
         this.zoom = Math.max(this.zoom - zoomStep, minZoom)
         log.info(`Zoom out to ${this.zoom}`)
+        this.rememberCenter()
         this.dirty()
     }
+
+
+    /// Rendering
     
     render(parent: tuff.parts.PartTag) {
         parent.class(styles.viewport)
