@@ -37,8 +37,8 @@ export class ProjectPart extends tuff.parts.Part<Project> {
                     tile.def.name = comps[comps.length-1].split('.')[0]
                 }
                 log.info(`Loaded tile '${tile.def.name}' from ${url}`)
-                this.dirty()
                 this.state.arrangeTiles()
+                this.dirty()
             })
             
         })

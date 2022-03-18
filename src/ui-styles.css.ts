@@ -317,13 +317,24 @@ export const treeItemChildren = style({
 export const viewport = style({
     position: 'relative',
     flex: '1 1 auto',
-    zIndex: 0,
-    overflow: 'scroll'
+    zIndex: 0
+})
+
+export const viewportScroller = style({
+    overflow: 'auto',
+    ...absoluteFill
 })
 
 export const plane = style({
     backgroundColor: colors.plane,
     backgroundImage: `radial-gradient(${colors.planeGrid} 1px, transparent 0)`,
+})
+
+export const overlay = style({
+    pointerEvents: 'none',
+    width: '100%',
+    height: '100%',
+    ...absoluteFill
 })
 
 export const tileContainer = style({
