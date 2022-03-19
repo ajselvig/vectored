@@ -5,8 +5,9 @@ import { TilePart } from "./tile-part"
 import * as box from '../geom/box'
 import * as mat from '../geom/mat'
 import * as vec from '../geom/vec'
-import Selection from '../ui/selection'
-import Tile from '../model/tile'
+import Selection, { SelectionInteractor } from '../ui/selection'
+import * as interaction from '../ui/interaction'
+import { OverlayPart } from './overlay'
 
 const log = new tuff.logging.Logger("Viewport")
 
@@ -17,8 +18,11 @@ export const zoomStep = 0.25
 export const zoomInKey = tuff.messages.untypedKey()
 export const zoomOutKey = tuff.messages.untypedKey()
 
+const planeKey = tuff.messages.untypedKey()
+
 export class Viewport extends tuff.parts.Part<Project> {
     tileParts: {[id: string]: TilePart} = {}
+    overlayPart!: OverlayPart
 
     planeVirtualToActual = mat.identity()
     planeActualToVirtual = mat.identity()
@@ -34,6 +38,8 @@ export class Viewport extends tuff.parts.Part<Project> {
 
     selection!: Selection
 
+    interactor?: interaction.Interactor
+
     init() {
         this.scrollKey = tuff.messages.untypedKey()
         this.onClick(zoomInKey, _ => {
@@ -44,13 +50,40 @@ export class Viewport extends tuff.parts.Part<Project> {
         }, {attach: "passive"})
 
         this.onScroll(this.scrollKey, _ => {
-            log.info('scroll')
-            this.stale()
+            // log.info('scroll')
+            // this.stale()
         })
         this.selection = this.state.selection
         this.selection.addListener(this.id, _ => {
-            log.info("Viewport selection changed")
-            this.stale()
+            // log.info("Viewport selection changed")
+            // this.stale()
+        })
+
+        this.overlayPart = this.makePart(OverlayPart, this as Viewport)
+
+        this.interactor = new SelectionInteractor(this.selection)
+
+        this.onMouseEnter(interaction.key, m => {
+            log.info(`Model mouse enter`, m)
+            
+        })
+        this.onMouseLeave(interaction.key, m => {
+            log.info(`Model mouse leave`, m)
+        })
+        this.onMouseDown(interaction.key, m => {
+            log.info(`Model mouse down`, m)
+            if (this.interactor) {
+                const model = this.state.find(m.data)
+                m.event.stopPropagation()
+                m.event.stopImmediatePropagation()
+                m.event.preventDefault()
+                this.interactor.onMouseDown(model, m.event)
+            }
+        })
+
+        this.onClick(planeKey, _ => {
+            log.info("Clicked on plane")
+            this.selection.clear()
         })
     }
 
@@ -74,7 +107,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         this.lastCenter = box.center(this.virtualBox)
         this.planeVirtualToViewport = mat.translate(this.planeVirtualToActual, -scroller.scrollLeft/this.zoom, -scroller.scrollTop/this.zoom)
         this.viewportSize = vec.make(scroller.clientWidth, scroller.clientHeight)
-        this.drawOverlay()
+        // this.drawOverlay()
     }
 
 
@@ -159,6 +192,11 @@ export class Viewport extends tuff.parts.Part<Project> {
         parent.div(styles.viewportScroller, scroller => {
             scroller.emitScroll(this.scrollKey)  
             scroller.div(styles.plane, plane => { 
+                // make a separate plane layer to collect interaction events 
+                // so it doesn't receive any events from the rest of the children
+                plane.div(styles.planeInteract).emitClick(planeKey)
+                
+                // render each tile
                 this.state.eachOfType("tile", tile => {
                     if (!parts[tile.id]) {
                         parts[tile.id] = this.makePart(TilePart, tile)
@@ -174,6 +212,9 @@ export class Viewport extends tuff.parts.Part<Project> {
                         height: `${tileBox.height}px`
                     })
                 })
+
+                // render the overlay part
+                plane.part(this.overlayPart)
             }).css({
                 width: `${bounds.width}px`, 
                 height: `${bounds.height}px`,
@@ -182,7 +223,7 @@ export class Viewport extends tuff.parts.Part<Project> {
             })   
         })
 
-        parent.canvas({id: this.overlayId}, styles.overlay)
+        parent.canvas({id: this.overlayId}, styles.overlayCanvas)
 
     }
 
@@ -212,19 +253,20 @@ export class Viewport extends tuff.parts.Part<Project> {
                 }
                 this.overlayContext = context
             }
-            this.overlay.width = this.viewportSize.x
-            this.overlay.height = this.viewportSize.y
-            const ctx = this.overlayContext!
+            this.overlay.width = this.viewportSize.x*2
+            this.overlay.height = this.viewportSize.y*2
+            // const ctx = this.overlayContext!
 
-            this.selection.each(selected => {
-                if (selected.type == 'tile') {
-                    const tile = selected as Tile
-                    const box = mat.transformBox(this.planeVirtualToViewport, tile.def.bounds)
-                    ctx.strokeStyle = '#ff0000'
-                    ctx.lineWidth = 2
-                    ctx.strokeRect(box.x, box.y, box.width, box.height)
-                }
-            })
+            // for now, let's try to render these in the DOM
+            // this.selection.each(selected => {
+            //     if (selected.type == 'tile') {
+            //         const tile = selected as Tile
+            //         const box = mat.transformBox(this.planeVirtualToViewport, tile.def.bounds)
+            //         ctx.strokeStyle = '#ff0000'
+            //         ctx.lineWidth = 2
+            //         ctx.strokeRect(box.x, box.y, box.width, box.height)
+            //     }
+            // })
         })
     }
 

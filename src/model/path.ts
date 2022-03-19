@@ -2,6 +2,8 @@ import { ModelKey, ModelRenderTag, StyledModel, StyledModelDef } from './model'
 import Project from "./project"
 import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
+import * as box from '../geom/box'
+import * as mat from '../geom/mat'
 import { transforms2string } from './transform'
 import svgpath from 'svgpath'
 
@@ -73,12 +75,30 @@ export function printPathDef(def: PathDef): string {
 }
 
 /**
+ * Computes the local bounding box for a path definition.
+ */
+export function pathDefBounds(def: PathDef): box.Box {
+    let points = def.subpaths.flatMap(subpath => subpath.vertices.map(v => v.point))
+    // TODO: make CSS transforms actualy useful
+    // if (def.transforms) {
+    //     def.transforms.forEach(t => {
+    //         points = points.map(p => mat.transform(t, p))
+    //     })
+    // }
+    return box.fromPoints(points)
+}
+
+/**
  * A series of vertices forming an open or closed path of straight and/or curved edges.
  */
 export default class Path extends StyledModel<PathDef, never> {
 
     constructor(readonly project: Project, def: PathDef, key?: ModelKey) {
         super('path', project, def, key)
+    }
+
+    get localBounds(): box.Box {
+        return pathDefBounds(this.def)
     }
     
     render(parent: ModelRenderTag): void {
@@ -94,8 +114,22 @@ export default class Path extends StyledModel<PathDef, never> {
         if (style) {
             this.applyStyle(attrs, style)
         }
-        parent.path(attrs)
+        
+        // possibly render a separate interact path
+        const interactAttrs = this.computeInteractStyle(attrs)
+        if (interactAttrs) {
+            parent.path(attrs)
+            const elem = parent.path(interactAttrs)
+            this.attachInteractionEmits(elem)
+        }
+        else {
+            const elem = parent.path(attrs)
+            this.attachInteractionEmits(elem)
+        }
+
+
     }
+    
 }
 
 

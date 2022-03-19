@@ -32,7 +32,7 @@ const frameShadow = {
 
 const fontFamily = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif'
 
-const colors = {
+export const colors = {
     fg: '#222',
     bg: '#f8f8f8',
     button: '#08a',
@@ -328,9 +328,14 @@ export const viewportScroller = style({
 export const plane = style({
     backgroundColor: colors.plane,
     backgroundImage: `radial-gradient(${colors.planeGrid} 1px, transparent 0)`,
+    position: 'relative'
 })
 
-export const overlay = style({
+export const planeInteract = style({
+    ...absoluteFill
+})
+
+export const overlayCanvas = style({
     pointerEvents: 'none',
     width: '100%',
     height: '100%',
@@ -349,7 +354,8 @@ export const tile = style({
 
 export const tileSvg = style({
     width: '100%',
-    height: '100%'
+    height: '100%',
+    ...absoluteFill
 })
 
 export const tileLabel = style({
@@ -359,6 +365,32 @@ export const tileLabel = style({
     lineHeight: 1,
     top: -18,
     left: 0
+})
+
+
+/// Selection
+
+export const selectionRect = style({
+    stroke: colors.selection,
+    strokeWidth: 2,
+    fill: 'transparent'
+})
+
+
+/// Overlay
+
+export const overlayPart = style({
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+    ...absoluteFill
+})
+
+export const overlaySvg = style({
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+    ...absoluteFill
 })
 
 

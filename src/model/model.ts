@@ -7,6 +7,9 @@ import Path from './path'
 import { StyleDef, paintDef2string } from './style'
 import { TransformList } from './transform'
 import Use from './use'
+import * as interaction from '../ui/interaction'
+import * as box from '../geom/box'
+import * as styles from '../ui-styles.css'
 
 const log = new tuff.logging.Logger("Model")
 
@@ -60,12 +63,14 @@ export interface IModel {
     readonly type: ModelTypeName
     readonly id: string
     project: Project
+    tile?: Tile
     append(child: IModel): void
     get(index: number): IModel | null
     each(fn: (child: IModel) => any): void
     count: number
     def: ModelDef
     render(parent: ModelRenderTag): void
+    localBounds: box.Box
 }
 
 /**
@@ -92,13 +97,26 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
     readonly key: ModelKey
     readonly children: Array<ChildType>
     abstract readonly project: Project
+    private _tile?: Tile
 
     get id(): string {
         return this.key.id
     }
+    
+    get overlayId(): string {
+        return this.key.id + '__overlay__'
+    }
 
     get type(): ModelTypeName {
         return this.key.type
+    }
+
+    get tile(): Tile|undefined {
+        return this._tile
+    }
+
+    set tile(t: Tile|undefined) {
+        this._tile = t
     }
 
     constructor(type: ModelTypeName, 
@@ -126,6 +144,9 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
 
     append<T extends ChildType>(child: T) {
         this.children.push(child)
+        if (child.type != 'tile') {
+            child.tile = this.tile
+        }
     }
 
     each(fn: (child: IModel) => any) {
@@ -170,6 +191,24 @@ export abstract class ProjectModel<DefType extends ProjectDef, ChildType extends
         this.project.register(this)
     }
 
+    /**
+     * The bounding box local to the tile's coordinates.
+     */
+    abstract get localBounds(): box.Box
+
+    attachInteractionEmits(elem: tuff.svg.SvgParentTag) {
+        interaction.attachEmits(this, elem)
+    }
+
+    renderSelection(parent: ModelRenderTag, bounds: box.Box) {
+        parent.rect(styles.selectionRect, 
+            {x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height})
+    }
+
+    get isSelected(): boolean{
+        return this.project.selection.isSelected(this.key)
+    }
+
 }
 
 /**
@@ -179,6 +218,8 @@ export type StyledModelDef = ProjectDef & {
     style?: StyleDef
     styleId?: string
 }
+
+const overlayColor = '#00000088'
 
 export abstract class StyledModel<DefType extends StyledModelDef, ChildType extends IModel> extends ProjectModel<DefType, ChildType> {
 
@@ -207,6 +248,24 @@ export abstract class StyledModel<DefType extends StyledModelDef, ChildType exte
         if (style.opacity != null) {
             attrs.opacity = style.opacity
         }
+    }
+
+    
+
+    /**
+     * Returns a new set of attributes only if the given attributes need an additional 
+     * rendering specifically for interaction (i.e. it only contains a stroke).
+     */
+    computeInteractStyle(attrs: tuff.svg.SvgBaseAttrs): tuff.svg.SvgBaseAttrs|null {
+        if ((!attrs.fill || attrs.fill=='transparent') && attrs.stroke) {
+            return {
+                stroke: overlayColor,
+                strokeWidth: (attrs.strokeWidth || 1) * 4,
+                id: this.overlayId,
+                ...attrs
+            }
+        }
+        return null
     }
 
 }

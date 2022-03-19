@@ -45,10 +45,7 @@ class TreeTilePart extends tuff.parts.Part<Tile> {
         this.onClick(TreeItemClick, m => {
             log.info(`Clicked tree item`, m.data)
             const item = this.project.find(m.data)
-            if (!m.event.shiftKey) {
-                this.selection.clear()
-            }
-            this.selection.append(item)
+            this.selection.append(item, !m.event.shiftKey)
         })
 
         this.selection.addListener(`tree-tile-${this.state.id}`, (_) => {

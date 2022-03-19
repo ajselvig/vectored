@@ -52,11 +52,20 @@ export default class Tile extends ProjectModel<TileDef, Path | Group | Use> {
         return box.make(0, 0, this.width, this.height)
     }
 
+    get localBounds(): box.Box {
+        return this.def.bounds
+    }
+
+    get tile(): Tile|undefined {
+        return this
+    }
+
 
     /// Rendering
 
     renderInHtml(parent: tuff.html.HtmlParentTag) {
         parent.svg(styles.tileSvg, svg => {
+            this.attachInteractionEmits(svg)
             svg.attrs({
                 id: this.id,
                 width: this.def.bounds.width, 

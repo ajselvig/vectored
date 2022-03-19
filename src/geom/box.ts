@@ -1,3 +1,4 @@
+import { arrays } from 'tuff-core'
 import * as vec from './vec'
 
 /**
@@ -119,4 +120,38 @@ export const union = (b1: Box, b2: Box): Box => {
         bottom: Math.max(s1.bottom, s2.bottom)
     }
     return fromSides(s)
+}
+
+/**
+ * @returns a single box containing all boxes.
+ */
+export const unionAll = (boxes: Array<Box>): Box => {
+    if (boxes.length == 1) {
+        return boxes[0]
+    }
+    const allSides = boxes.map(b => toSides(b))
+    const sidesUnion = {
+        left: arrays.min(allSides.map(s => s.left)),
+        right: arrays.max(allSides.map(s => s.right)),
+        top: arrays.min(allSides.map(s => s.top)),
+        bottom: arrays.max(allSides.map(s => s.bottom))
+    }
+    return fromSides(sidesUnion)
+}
+
+/**
+ * @returns a box that encapsulates an array of points
+ */
+export const fromPoints = (points: vec.Vec[]): Box => {
+    const allSides = points.map(v => vec.toSides(v))
+    if (allSides.length == 1) {
+        return fromSides(allSides[0])
+    }
+    const sidesUnion = {
+        left: arrays.min(allSides.map(s => s.left)),
+        right: arrays.max(allSides.map(s => s.right)),
+        top: arrays.min(allSides.map(s => s.top)),
+        bottom: arrays.max(allSides.map(s => s.bottom))
+    }
+    return fromSides(sidesUnion)
 }

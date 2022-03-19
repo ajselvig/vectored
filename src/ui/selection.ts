@@ -1,5 +1,9 @@
 import { IModel, ModelKey } from "../model/model"
+import * as styles from '../ui-styles.css'
 import * as tuff from 'tuff-core'
+import * as mat from '../geom/mat'
+import { Interactor } from "./interaction"
+import { OverlayContext } from "../view/overlay"
 
 const log = new tuff.logging.Logger("Selection")
 
@@ -16,8 +20,12 @@ export default class Selection {
     /**
      * Appends an item to the selection.
      * @param item an item to be selected
+     * @param clear whether to clear the selection before adding the item
      */
-    append(item: IModel) {
+    append(item: IModel, clear: boolean = false) {
+        if (clear) {
+            this.items = {}
+        }
         this.items[item.id] = item
         log.info(`Selected ${item.type} "${item.def.name}"`)
         this.notifyListeners()
@@ -82,4 +90,40 @@ export default class Selection {
         }
     }
 
+}
+
+export const color = '#'
+export class SelectionInteractor extends Interactor {
+
+    constructor(readonly selection: Selection) {
+        super()
+    }
+    
+    onMouseDown(model: IModel, event: MouseEvent) {
+        log.info(`Mouse down`, model)
+        this.selection.append(model, !event.shiftKey)
+    }
+
+    renderOverlay(ctx: OverlayContext) {
+        this.selection.each(m => {
+            const tile = m.tile
+            log.info(`Tile of ${m.type} is`, tile)
+            if (tile && m.type != 'tile') {
+                ctx.setTile(tile)
+            }
+            const localBounds = m.localBounds
+            const actualBounds =  mat.transformBox(ctx.localToActual, localBounds)
+            log.info(`Rendering ${m.type} at`, actualBounds)
+            ctx.parent.rect({
+                x: actualBounds.x, 
+                y: actualBounds.y, 
+                width: actualBounds.width,
+                height: actualBounds.height,
+                fill: 'transparent',
+                stroke: styles.colors.selection,
+                strokeWidth: 2,
+                strokeDasharray: '4 4'
+            })
+        })
+    }
 }
