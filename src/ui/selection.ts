@@ -1,9 +1,12 @@
-import { IModel, ModelKey } from "../model/model"
+import { IModel, ModelKey, ModelTypeName } from "../model/model"
 import * as styles from '../ui-styles.css'
 import * as tuff from 'tuff-core'
 import * as mat from '../geom/mat'
+import * as box from '../geom/box'
 import { Interactor } from "./interaction"
 import { OverlayContext } from "../view/overlay"
+import Tile from "../model/tile"
+import { arrays } from "tuff-core"
 
 const log = new tuff.logging.Logger("Selection")
 
@@ -23,7 +26,11 @@ export default class Selection {
      * @param clear whether to clear the selection before adding the item
      */
     append(item: IModel, clear: boolean = false) {
-        if (clear) {
+        const newTile = item.tile
+        const existingTile = this.tile
+        const types = this.types
+        const allTiles = types.length==1 && types[0]=='tile' && item.type=='tile'
+        if (clear || (newTile && existingTile && !allTiles && newTile != existingTile)) { // force clear if they're selecting from a different tile
             this.items = {}
         }
         this.items[item.id] = item
@@ -48,6 +55,13 @@ export default class Selection {
     }
 
     /**
+     * Gets a list of all unique model types currently in the selection.
+     */
+    get types(): Array<ModelTypeName> {
+        return arrays.unique(this.map(c => c.type))
+    }
+
+    /**
      * @param key a model key
      * @returns true if the item with the given key is selected
      */
@@ -63,6 +77,14 @@ export default class Selection {
         for (let [_, item] of Object.entries(this.items)) {
             fn(item)   
         }
+    }
+
+    /**
+     * Maps over the selected items.
+     * @param fn a function to call on each selected item
+     */
+    map<T>(fn: (item: IModel) => T) {
+        return Object.values(this.items).map(fn)
     }
 
     private listeners: Record<string,SelectionListener> = {}
@@ -90,6 +112,17 @@ export default class Selection {
         }
     }
 
+    /**
+     * The shared tile of all selected values, or undefined if there's more than one.
+     */
+    get tile(): Tile|undefined {
+       const tiles = arrays.unique(this.map(c => c.tile))
+       if (tiles.length == 1) {
+           return tiles[0]
+       }
+       return undefined
+    }
+
 }
 
 export const color = '#'
@@ -105,25 +138,36 @@ export class SelectionInteractor extends Interactor {
     }
 
     renderOverlay(ctx: OverlayContext) {
-        this.selection.each(m => {
-            const tile = m.tile
-            log.info(`Tile of ${m.type} is`, tile)
-            if (tile && m.type != 'tile') {
+        const types = this.selection.types
+        if (types.length == 1 && types[0] == 'tile') {
+            // if they're all tiles, put a box around their bounds
+            let bounds = box.unionAll(this.selection.map(t => (t as Tile).def.bounds))
+            bounds = mat.transformBox(ctx.virtualToActual, bounds)
+            this.renderSelectionBox(ctx, bounds)
+        }
+        else {
+            // something other than all tiles
+            const tile = this.selection.tile
+            if (tile) {
                 ctx.setTile(tile)
             }
-            const localBounds = m.localBounds
-            const actualBounds =  mat.transformBox(ctx.localToActual, localBounds)
-            log.info(`Rendering ${m.type} at`, actualBounds)
-            ctx.parent.rect({
-                x: actualBounds.x, 
-                y: actualBounds.y, 
-                width: actualBounds.width,
-                height: actualBounds.height,
-                fill: 'transparent',
-                stroke: styles.colors.selection,
-                strokeWidth: 2,
-                strokeDasharray: '4 4'
-            })
+            const localBounds = box.unionAll(this.selection.map(m => m.localBounds))
+            const actualBounds = mat.transformBox(ctx.localToActual, localBounds)
+            this.renderSelectionBox(ctx, actualBounds)
+        }
+    }
+
+    renderSelectionBox(ctx: OverlayContext, bounds: box.Box) {
+        log.info(`Rendering bounds at`, bounds)
+        ctx.parent.rect({
+            x: bounds.x, 
+            y: bounds.y, 
+            width: bounds.width,
+            height: bounds.height,
+            fill: 'transparent',
+            stroke: styles.colors.selection,
+            strokeWidth: 3,
+            strokeDasharray: '6 6'
         })
     }
 }

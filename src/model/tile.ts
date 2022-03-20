@@ -53,7 +53,7 @@ export default class Tile extends ProjectModel<TileDef, Path | Group | Use> {
     }
 
     get localBounds(): box.Box {
-        return this.def.bounds
+        return {...this.def.bounds, x: 0, y: 0}
     }
 
     get tile(): Tile|undefined {
