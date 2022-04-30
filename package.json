@@ -11,23 +11,23 @@
     "icons": "node --loader ts-node/esm  --experimental-modules --experimental-specifier-resolution=node src/gen/icons.ts"
   },
   "devDependencies": {
-    "@types/svgo": "^2.6.2",
-    "happy-dom": "^2.39.1",
-    "typescript": "^4.4.4",
+    "@types/svgo": "^2.6.3",
+    "happy-dom": "^3.1.0",
     "ts-node": "^10.7.0",
-    "vite": "^2.7.2",
-    "vitest": "^0.3.4"
+    "typescript": "4.6",
+    "vite": "^2.9.6",
+    "vitest": "^0.10.0"
   },
   "dependencies": {
     "@types/color": "^3.0.3",
     "@types/uuid": "^8.3.4",
-    "@vanilla-extract/css": "^1.6.8",
-    "@vanilla-extract/vite-plugin": "^3.1.2",
-    "color": "^4.2.1",
+    "@vanilla-extract/css": "^1.7.0",
+    "@vanilla-extract/vite-plugin": "^3.1.4",
+    "color": "^4.2.3",
     "saxes": "^6.0.0",
     "svgo": "^2.8.0",
     "svgpath": "^2.5.0",
-    "tuff-core": "^0.3.2",
+    "tuff-core": "^0.6.2",
     "uuid": "^8.3.2"
   }
 }

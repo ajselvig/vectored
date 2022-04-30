@@ -6,8 +6,8 @@ import Path from './path'
 import Project from './project'
 import * as tuff from 'tuff-core'
 import { PaintServerDef } from './style'
-import { DefsTag } from 'tuff-core/dist/svg'
 import Use from './use'
+import { DefsTag } from 'tuff-core/dist/svg'
 
 export type TileDef = {
     bounds: box.Box
