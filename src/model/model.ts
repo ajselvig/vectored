@@ -131,6 +131,7 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
         if (!def.name?.length) {
             def.name = `${this.type} ${num}`
         }
+        log.info(`New ${def.name}`)
         this.children = []
     }
 
