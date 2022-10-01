@@ -3,11 +3,9 @@ import Project from "../model/project"
 import * as tuff from 'tuff-core'
 import { Viewport } from './viewport'
 import Selection from '../ui/selection'
-import * as box from '../geom/box'
 import * as mat from '../geom/mat'
-import * as vec from '../geom/vec'
 import Tile from '../model/tile'
-import { SvgParentTag } from 'tuff-core/dist/svg'
+import { SvgParentTag } from 'tuff-core/svg'
 
 const log = new tuff.logging.Logger("Overlay")
 
@@ -17,7 +15,7 @@ export class OverlayPart extends tuff.parts.Part<Viewport> {
     selection!: Selection
 
 
-    init() {
+    async init() {
         this.project = this.state.state
         this.selection = this.project.selection
 
@@ -26,10 +24,12 @@ export class OverlayPart extends tuff.parts.Part<Viewport> {
             this.dirty()
         })
     }
+
+    get parentClasses(): string[] {
+        return [styles.overlayPart]
+    }
     
     render(parent: tuff.parts.PartTag) {
-        parent.class(styles.overlayPart)
-
         parent.svg(styles.tileSvg, svg => {
             const ctx = new OverlayContext(svg, this.state.planeVirtualToActual)
             if (this.state.interactor) {

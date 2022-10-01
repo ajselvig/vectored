@@ -13,15 +13,17 @@ export class ProjectPart extends tuff.parts.Part<Project> {
     viewport!: Viewport
     settings!: Settings
 
-    init() {
+    async init() {
         this.tree = this.makePart(Tree, this.state)
         this.viewport = this.makePart(Viewport, this.state)
         this.settings = this.makePart(Settings, this.state)
     }
 
-    render(parent: tuff.parts.PartTag) {
-        parent.class(styles.projectLayout)
+    get parentClasses(): string[] {
+        return [styles.projectLayout]
+    }
 
+    render(parent: tuff.parts.PartTag) {
         parent.part(this.tree)
         parent.part(this.viewport)
         parent.part(this.settings)
@@ -38,7 +40,9 @@ export class ProjectPart extends tuff.parts.Part<Project> {
                 }
                 log.info(`Loaded tile '${tile.def.name}' from ${url}`)
                 this.state.arrangeTiles()
+                this.viewport.makeTileParts()
                 this.viewport.centerOnContent()
+                this.tree.makeTileParts()
                 this.dirty()
             })
             

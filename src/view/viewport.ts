@@ -21,7 +21,6 @@ export const zoomOutKey = tuff.messages.untypedKey()
 const planeKey = tuff.messages.untypedKey()
 
 export class Viewport extends tuff.parts.Part<Project> {
-    tileParts: {[id: string]: TilePart} = {}
     overlayPart!: OverlayPart
 
     planeVirtualToActual = mat.identity()
@@ -40,7 +39,7 @@ export class Viewport extends tuff.parts.Part<Project> {
 
     interactor?: interaction.Interactor
 
-    init() {
+    async init() {
         this.scrollKey = tuff.messages.untypedKey()
         this.onClick(zoomInKey, _ => {
             this.zoomIn()
@@ -93,7 +92,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         const scroller = elem.getElementsByClassName(styles.viewportScroller)[0]
 
         // if tmpCenter is set, update the scroll position to center on it
-        if (this.tmpCenter) {
+        if (this.tmpCenter && this.viewportSize) {
             const actualCenter = mat.transform(this.planeVirtualToActual, this.tmpCenter)
             scroller.scrollLeft =  actualCenter.x - this.viewportSize.x/2
             scroller.scrollTop = actualCenter.y - this.viewportSize.y/2
@@ -109,6 +108,26 @@ export class Viewport extends tuff.parts.Part<Project> {
         this.viewportSize = vec.make(scroller.clientWidth, scroller.clientHeight)
         // this.drawOverlay()
     }
+
+
+    /// Tiles
+
+    tileParts: {[id: string]: TilePart} = {}
+
+    makeTileParts() {
+        const parts = this.tileParts
+        let newPart = false
+        this.state.eachOfType("tile", tile => {
+            if (!parts[tile.id]) {
+                parts[tile.id] = this.makePart(TilePart, tile)
+                newPart = true
+            }
+        })
+        if (newPart) {
+            this.dirty()
+        }
+    }
+
 
 
     /// Zoom / Centering
@@ -141,6 +160,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         const tilesBox = this.state.boundingBox
         this.tmpCenter = box.center(tilesBox)
         log.info(`Centering on content at`, this.tmpCenter)
+        this.dirty()
     }
 
     zoomIn() {
@@ -160,8 +180,11 @@ export class Viewport extends tuff.parts.Part<Project> {
 
     /// Rendering
     
+    get parentClasses(): string[] {
+        return [styles.viewport]    
+    }
+
     render(parent: tuff.parts.PartTag) {
-        parent.class(styles.viewport)
 
         // compute the plane size based on the bounding box of the tiles
         const tilesBox = this.state.boundingBox
@@ -186,7 +209,6 @@ export class Viewport extends tuff.parts.Part<Project> {
         this.planeVirtualToActual = builder.build()
         this.planeActualToVirtual = builder.buildInverse()
         
-        const parts = this.tileParts
         const gridSize = this.state.planeGridSize
 
         parent.div(styles.viewportScroller, scroller => {
@@ -197,21 +219,18 @@ export class Viewport extends tuff.parts.Part<Project> {
                 plane.div(styles.planeInteract).emitClick(planeKey)
                 
                 // render each tile
-                this.state.eachOfType("tile", tile => {
-                    if (!parts[tile.id]) {
-                        parts[tile.id] = this.makePart(TilePart, tile)
-                    }
+                for (const part of Object.values(this.tileParts)) {
                     // make a container for the tile at the correct size and position
-                    const tileBox = mat.transformBox(this.planeVirtualToActual, tile.def.bounds)
+                    const tileBox = mat.transformBox(this.planeVirtualToActual, part.state.def.bounds)
                     plane.div(styles.tileContainer, tileContainer => {
-                        tileContainer.part(parts[tile.id])
+                        tileContainer.part(part)
                     }).css({
                         left: `${tileBox.x}px`, 
                         top: `${tileBox.y}px`,
                         width: `${tileBox.width}px`,
                         height: `${tileBox.height}px`
                     })
-                })
+                }
 
                 // render the overlay part
                 plane.part(this.overlayPart)
@@ -224,7 +243,6 @@ export class Viewport extends tuff.parts.Part<Project> {
         })
 
         parent.canvas({id: this.overlayId}, styles.overlayCanvas)
-
     }
 
 

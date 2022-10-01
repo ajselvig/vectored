@@ -1,4 +1,4 @@
-import { SvgParentTag } from "tuff-core/dist/svg"
+import { SvgParentTag } from "tuff-core/svg"
 import { StyledModelDef, StyledModel, ModelKey } from "./model"
 import Project from "./project"
 import * as tuff from 'tuff-core'

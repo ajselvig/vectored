@@ -3,7 +3,6 @@ import Project from "./project"
 import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
 import * as box from '../geom/box'
-import * as mat from '../geom/mat'
 import { transforms2string } from './transform'
 import svgpath from 'svgpath'
 

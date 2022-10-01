@@ -12,18 +12,30 @@ export class Tree extends tuff.parts.Part<Project> {
 
     readonly tileParts: {[id: string]: TreeTilePart} = {}
 
-    init() {
+    get parentClasses(): string[] {
+        return [styles.treeLayout]
+    }
+
+    makeTileParts() {
+        const parts = this.tileParts
+        let newPart = false
+        this.state.eachOfType("tile", tile => {
+            if (!parts[tile.id]) {
+                parts[tile.id] = this.makePart(TreeTilePart, tile)
+                newPart = true
+            }
+        })
+        if (newPart) {
+            this.dirty()
+        }
     }
     
     render(parent: tuff.parts.PartTag) {
-        parent.class(styles.treeLayout)
         this.state.eachOfType("tile", tile => {
             let tilePart = this.tileParts[tile.id]
-            if (!tilePart) {
-                tilePart = this.makePart(TreeTilePart, tile)
-                this.tileParts[tile.id] = tilePart
+            if (tilePart) {
+                parent.part(tilePart)
             }
-            parent.part(tilePart)
         }, {sorted: true})
     }
 
@@ -37,7 +49,7 @@ class TreeTilePart extends tuff.parts.Part<Tile> {
     selection!: Selection
     project!: Project
 
-    init() {
+    async init() {
         this.project = this.state.project
         this.selection = this.project.selection
 

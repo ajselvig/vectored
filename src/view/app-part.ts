@@ -17,7 +17,7 @@ const urls = [
     svgUrl
 ]
 
-tuff.logging.Logger.level = 'debug'
+tuff.logging.Logger.level = 'info'
 const log = new tuff.logging.Logger("App")
 
 export class AppPart extends tuff.parts.Part<{}> {
@@ -26,7 +26,7 @@ export class AppPart extends tuff.parts.Part<{}> {
     bottomBar!: BottomBar
     projectPart!: ProjectPart
 
-    init() {
+    async init() {
         const project = new Project()
 
         log.info("Loading some demo tiles...")
@@ -40,7 +40,7 @@ export class AppPart extends tuff.parts.Part<{}> {
         this.bottomBar = this.makeStatelessPart(BottomBar)
     }
     
-    render(parent: tuff.parts.PartTag) {
+    render(parent: tuff.parts.PartTag) {        
         parent.div(styles.appLayout, container => {
             container.part(this.topBar)
             container.part(this.projectPart)
