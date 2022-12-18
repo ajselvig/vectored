@@ -123,6 +123,11 @@ export default class Selection {
        return undefined
     }
 
+    /**
+     * A single item can be hovered at any given time.
+     */
+    hoverItem?: IModel = undefined
+
 }
 
 export const color = '#'
@@ -137,7 +142,33 @@ export class SelectionInteractor extends Interactor {
         this.selection.append(model, !event.shiftKey)
     }
 
+    onMouseOver(model: IModel, _: MouseEvent): void {
+        log.info('Mouse Over', model)
+        this.selection.hoverItem = model
+    }
+
+    onMouseOut(model: IModel, _: MouseEvent): void {
+        log.info('Mouse Out', model)
+        this.selection.hoverItem = undefined
+    }
+
     renderOverlay(ctx: OverlayContext) {
+        // highlight the hover element
+        if (this.selection.hoverItem) {
+            if (this.selection.hoverItem.tile) {
+                ctx.setTile(this.selection.hoverItem.tile)
+            }
+            const localBounds = this.selection.hoverItem.localBounds
+            const actualBounds = mat.transformBox(ctx.localToActual, localBounds)
+            this.renderSelectionBox(ctx, actualBounds, 'hover')
+        }
+
+        const tile = this.selection.tile
+        if (tile) {
+            ctx.setTile(tile)
+        }
+
+        // highlight the selected elements
         const types = this.selection.types
         if (types.length == 1 && types[0] == 'tile') {
             // if they're all tiles, put a box around their bounds
@@ -145,21 +176,17 @@ export class SelectionInteractor extends Interactor {
             bounds = mat.transformBox(ctx.virtualToActual, bounds)
             this.renderSelectionBox(ctx, bounds)
         }
-        else {
+        else if (this.selection.count()) {
             // something other than all tiles
-            const tile = this.selection.tile
-            if (tile) {
-                ctx.setTile(tile)
-            }
             const localBounds = box.unionAll(this.selection.map(m => m.localBounds))
             const actualBounds = mat.transformBox(ctx.localToActual, localBounds)
             this.renderSelectionBox(ctx, actualBounds)
         }
     }
 
-    renderSelectionBox(ctx: OverlayContext, bounds: box.Box) {
-        log.info(`Rendering bounds at`, bounds)
-        ctx.parent.rect({
+    renderSelectionBox(ctx: OverlayContext, bounds: box.Box, reason: 'selection'|'hover' = 'selection') {
+        log.info(`Rendering ${reason} bounds at`, bounds)
+        const attrs = {
             x: bounds.x, 
             y: bounds.y, 
             width: bounds.width,
@@ -168,6 +195,11 @@ export class SelectionInteractor extends Interactor {
             stroke: styles.colors.selection,
             strokeWidth: 3,
             strokeDasharray: '6 6'
-        })
+        }
+        if (reason == 'hover') {
+            attrs.strokeWidth = 2
+            attrs.strokeDasharray = '3 3'
+        }
+        ctx.parent.rect(attrs)
     }
 }

@@ -17,7 +17,7 @@ const urls = [
     svgUrl
 ]
 
-tuff.logging.Logger.level = 'info'
+tuff.logging.Logger.level = 'debug'
 const log = new tuff.logging.Logger("App")
 
 export class AppPart extends tuff.parts.Part<{}> {

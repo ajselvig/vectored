@@ -8,6 +8,7 @@ import * as vec from '../geom/vec'
 import Selection, { SelectionInteractor } from '../ui/selection'
 import * as interaction from '../ui/interaction'
 import { OverlayPart } from './overlay'
+import { IModel, ModelKey } from '../model/model'
 
 const log = new tuff.logging.Logger("Viewport")
 
@@ -62,30 +63,44 @@ export class Viewport extends tuff.parts.Part<Project> {
 
         this.interactor = new SelectionInteractor(this.selection)
 
-        this.onMouseEnter(interaction.key, m => {
-            log.info(`Model mouse enter`, m)
-            
+        this.onMouseOver(interaction.key, m => {
+            log.info(`Model mouse over`, m)
+            if (this.interactor) {
+                const model = this.getModel(m)
+                this.interactor.onMouseOver(model, m.event)
+                this.overlayPart.dirty()
+            }
         })
-        this.onMouseLeave(interaction.key, m => {
-            log.info(`Model mouse leave`, m)
+        this.onMouseOut(interaction.key, m => {
+            log.info(`Model mouse out`, m)
+            if (this.interactor) {
+                const model = this.getModel(m)
+                this.interactor.onMouseOut(model, m.event)
+                this.overlayPart.dirty()
+            }
         })
         this.onMouseDown(interaction.key, m => {
             log.info(`Model mouse down`, m)
             if (this.interactor) {
-                const model = this.state.find(m.data)
-                m.event.stopPropagation()
-                m.event.stopImmediatePropagation()
-                m.event.preventDefault()
+                const model = this.getModel(m)
                 this.interactor.onMouseDown(model, m.event)
+                this.overlayPart.dirty()
             }
         })
 
         this.onClick(planeKey, _ => {
             log.info("Clicked on plane")
             this.selection.clear()
+            this.overlayPart.dirty()
         })
     }
 
+    getModel(m: tuff.messages.Message<'mouseover' | 'mouseout' | 'mousedown', ModelKey>): IModel {
+        m.event.stopPropagation()
+        m.event.stopImmediatePropagation()
+        m.event.preventDefault()
+        return this.state.find(m.data)
+    }
 
     update(elem: HTMLElement): void {
         log.info("Update", elem)
