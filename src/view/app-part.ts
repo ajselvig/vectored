@@ -17,7 +17,7 @@ const urls = [
     svgUrl
 ]
 
-tuff.logging.Logger.level = 'debug'
+tuff.logging.Logger.level = 'info'
 const log = new tuff.logging.Logger("App")
 
 export class AppPart extends tuff.parts.Part<{}> {
@@ -25,6 +25,8 @@ export class AppPart extends tuff.parts.Part<{}> {
     topBar!: TopBar
     bottomBar!: BottomBar
     projectPart!: ProjectPart
+
+    interactionKey = tuff.messages.untypedKey()
 
     async init() {
         const project = new Project()
@@ -41,6 +43,7 @@ export class AppPart extends tuff.parts.Part<{}> {
     }
     
     render(parent: tuff.parts.PartTag) {        
+        parent.emitKeyDown(this.interactionKey)
         parent.div(styles.appLayout, container => {
             container.part(this.topBar)
             container.part(this.projectPart)

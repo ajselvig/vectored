@@ -7,6 +7,7 @@ import { Interactor } from "./interaction"
 import { OverlayContext } from "../view/overlay"
 import Tile from "../model/tile"
 import { arrays } from "tuff-core"
+import { Vec } from "tuff-core/vec"
 
 const log = new tuff.logging.Logger("Selection")
 
@@ -128,9 +129,15 @@ export default class Selection {
      */
     hoverItem?: IModel = undefined
 
+
+    move(v: Vec) {
+        log.info(`Moving selection`, v)
+
+    }
+
 }
 
-export const color = '#'
+
 export class SelectionInteractor extends Interactor {
 
     constructor(readonly selection: Selection) {
@@ -150,6 +157,34 @@ export class SelectionInteractor extends Interactor {
     onMouseOut(model: IModel, _: MouseEvent): void {
         log.info('Mouse Out', model)
         this.selection.hoverItem = undefined
+    }
+
+    onKeyPress(m: tuff.messages.Message<"keypress", tuff.messages.KeyPress>): void {
+        log.info(`Selection KeyPress: ${m.data.id}`)
+
+        // don't keep going if the selection is empty
+        if (!this.selection.count()) {
+            return
+        }
+        
+        switch (m.data.key) {
+            case "arrowup": 
+                this.selection.move({x: 0, y: -1})
+                m.event.preventDefault()
+                return
+            case "arrowdown": 
+                this.selection.move({x: 0, y: 1})
+                m.event.preventDefault()
+                return
+            case "arrowleft": 
+                this.selection.move({x: -1, y: 0})
+                m.event.preventDefault()
+                return
+            case "arrowright": 
+                this.selection.move({x: 1, y: 0})
+                m.event.preventDefault()
+                return
+        }
     }
 
     renderOverlay(ctx: OverlayContext) {
@@ -185,7 +220,7 @@ export class SelectionInteractor extends Interactor {
     }
 
     renderSelectionBox(ctx: OverlayContext, bounds: box.Box, reason: 'selection'|'hover' = 'selection') {
-        log.info(`Rendering ${reason} bounds at`, bounds)
+        log.debug(`Rendering ${reason} bounds at`, bounds)
         const attrs = {
             x: bounds.x, 
             y: bounds.y, 

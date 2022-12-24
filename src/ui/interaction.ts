@@ -25,5 +25,9 @@ export abstract class Interactor {
 
     }
 
+    onKeyPress(_m: tuff.messages.Message<"keypress", tuff.messages.KeyPress>) {
+
+    }
+
     abstract renderOverlay(ctx: OverlayContext): void
 }

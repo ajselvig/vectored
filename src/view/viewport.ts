@@ -34,14 +34,13 @@ export class Viewport extends tuff.parts.Part<Project> {
 
     viewportSize!: vec.Vec
 
-    scrollKey!: tuff.messages.UntypedKey
+    scrollKey = tuff.messages.untypedKey()
 
     selection!: Selection
 
-    interactor?: interaction.Interactor
+    interactor!: interaction.Interactor
 
     async init() {
-        this.scrollKey = tuff.messages.untypedKey()
         this.onClick(zoomInKey, _ => {
             this.zoomIn()
         }, {attach: "passive"})
@@ -64,28 +63,27 @@ export class Viewport extends tuff.parts.Part<Project> {
         this.interactor = new SelectionInteractor(this.selection)
 
         this.onMouseOver(interaction.key, m => {
-            log.info(`Model mouse over`, m)
-            if (this.interactor) {
-                const model = this.getModel(m)
-                this.interactor.onMouseOver(model, m.event)
-                this.overlayPart.dirty()
-            }
+            log.debug(`Model mouse over`, m)
+            const model = this.getModel(m)
+            this.interactor.onMouseOver(model, m.event)
+            this.overlayPart.dirty()
         })
         this.onMouseOut(interaction.key, m => {
-            log.info(`Model mouse out`, m)
-            if (this.interactor) {
-                const model = this.getModel(m)
-                this.interactor.onMouseOut(model, m.event)
-                this.overlayPart.dirty()
-            }
+            log.debug(`Model mouse out`, m)
+            const model = this.getModel(m)
+            this.interactor.onMouseOut(model, m.event)
+            this.overlayPart.dirty()
         })
         this.onMouseDown(interaction.key, m => {
-            log.info(`Model mouse down`, m)
-            if (this.interactor) {
-                const model = this.getModel(m)
-                this.interactor.onMouseDown(model, m.event)
-                this.overlayPart.dirty()
-            }
+            log.debug(`Model mouse down`, m)
+            const model = this.getModel(m)
+            this.interactor.onMouseDown(model, m.event)
+            this.overlayPart.dirty()
+        })
+
+        this.onAnyKeyPress(m => {
+            log.debug(`KeyPress ${m.data.id}`, m)
+            this.interactor.onKeyPress(m)
         })
 
         this.onClick(planeKey, _ => {
@@ -227,7 +225,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         const gridSize = this.state.planeGridSize
 
         parent.div(styles.viewportScroller, scroller => {
-            scroller.emitScroll(this.scrollKey)  
+            scroller.emitScroll(this.scrollKey)
             scroller.div(styles.plane, plane => { 
                 // make a separate plane layer to collect interaction events 
                 // so it doesn't receive any events from the rest of the children
