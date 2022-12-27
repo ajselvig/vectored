@@ -1,16 +1,17 @@
 import * as styles from '../ui-styles.css'
 import Group from './group'
 import { ModelDef, ModelKey, ModelRenderTag, ProjectModel } from './model'
-import * as box from '../geom/box'
+import * as tuff from 'tuff-core'
+const box = tuff.box
 import Path from './path'
 import Project from './project'
-import * as tuff from 'tuff-core'
 import { PaintServerDef } from './style'
 import Use from './use'
 import { DefsTag } from 'tuff-core/svg'
+import { Box } from 'tuff-core/box'
 
 export type TileDef = {
-    bounds: box.Box
+    bounds: Box
 } & ModelDef
 
 export default class Tile extends ProjectModel<TileDef, Path | Group | Use> {
@@ -47,12 +48,12 @@ export default class Tile extends ProjectModel<TileDef, Path | Group | Use> {
         return this.def.bounds.y + this.def.bounds.height
     }
 
-    get viewBox(): box.Box {
+    get viewBox(): Box {
         // return `0 0 ${this.width} ${this.height}`
         return box.make(0, 0, this.width, this.height)
     }
 
-    get localBounds(): box.Box {
+    get localBounds(): Box {
         return {...this.def.bounds, x: 0, y: 0}
     }
 

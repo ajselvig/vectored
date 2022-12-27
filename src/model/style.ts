@@ -1,5 +1,7 @@
-import * as vec from "../geom/vec"
+import * as tuff from 'tuff-core'
+const vec = tuff.vec
 import Color from 'color'
+import { Vec } from 'tuff-core/vec'
 
 export type Attrs = Record<string, string>
 
@@ -17,8 +19,8 @@ type GradientSpreadMethod = 'pad' | 'reflect' | 'repeat'
 export type LinearGradientDef = {
     id: string
     type: 'linear'
-    point1: vec.Vec
-    point2: vec.Vec
+    point1: Vec
+    point2: Vec
     spreadMethod: GradientSpreadMethod
     units: GradientUnits
     stops: GradientStop[]
@@ -28,9 +30,9 @@ export type RadialGradientDef = {
     id: string
     type: 'radial'
     units: GradientUnits
-    fromCenter: vec.Vec
+    fromCenter: Vec
     fromRadius: number
-    toCenter: vec.Vec
+    toCenter: Vec
     toRadius: number
     spreadMethod: GradientSpreadMethod
     stops: GradientStop[]

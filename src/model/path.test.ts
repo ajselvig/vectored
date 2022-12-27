@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {d2PathDef, PathDef, pathDef2d, points2Def, printPathDef} from './path'
-import * as vec from '../geom/vec'
+import * as tuff from 'tuff-core'
+const vec = tuff.vec
 
 function printDefs(d: string, def: PathDef) {
     const lines = [

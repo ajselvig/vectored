@@ -1,13 +1,14 @@
 import { IModel, ModelKey, ModelTypeName } from "../model/model"
 import * as styles from '../ui-styles.css'
 import * as tuff from 'tuff-core'
-import * as mat from '../geom/mat'
-import * as box from '../geom/box'
+const mat = tuff.mat
+const box = tuff.box
 import { Interactor } from "./interaction"
 import { OverlayContext } from "../view/overlay"
 import Tile from "../model/tile"
 import { arrays } from "tuff-core"
 import { Vec } from "tuff-core/vec"
+import { Box } from "tuff-core/box"
 
 const log = new tuff.logging.Logger("Selection")
 
@@ -219,7 +220,7 @@ export class SelectionInteractor extends Interactor {
         }
     }
 
-    renderSelectionBox(ctx: OverlayContext, bounds: box.Box, reason: 'selection'|'hover' = 'selection') {
+    renderSelectionBox(ctx: OverlayContext, bounds: Box, reason: 'selection'|'hover' = 'selection') {
         log.debug(`Rendering ${reason} bounds at`, bounds)
         const attrs = {
             x: bounds.x, 

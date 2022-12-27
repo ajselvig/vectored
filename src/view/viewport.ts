@@ -2,13 +2,15 @@ import * as styles from '../ui-styles.css'
 import Project from "../model/project"
 import * as tuff from 'tuff-core'
 import { TilePart } from "./tile-part"
-import * as box from '../geom/box'
-import * as mat from '../geom/mat'
-import * as vec from '../geom/vec'
+const box = tuff.box
+const mat = tuff.mat
+const vec = tuff.vec
 import Selection, { SelectionInteractor } from '../ui/selection'
 import * as interaction from '../ui/interaction'
 import { OverlayPart } from './overlay'
 import { IModel, ModelKey } from '../model/model'
+import { Box } from 'tuff-core/box'
+import { Vec } from 'tuff-core/vec'
 
 const log = new tuff.logging.Logger("Viewport")
 
@@ -30,9 +32,9 @@ export class Viewport extends tuff.parts.Part<Project> {
     virtualCenter = vec.identity()
 
     // projection of the viewport onto the virtual plane space
-    virtualBox!: box.Box
+    virtualBox!: Box
 
-    viewportSize!: vec.Vec
+    viewportSize!: Vec
 
     scrollKey = tuff.messages.untypedKey()
 
@@ -151,13 +153,13 @@ export class Viewport extends tuff.parts.Part<Project> {
      * Temporarily store the center of the viewport that will be 
      * used for the next update then discarded.
      */
-    private tmpCenter?: vec.Vec
+    private tmpCenter?: Vec
 
     /**
      * Store the center of the viewport (in plane virtual space)
      * after every update so that it can be used by rememberCenter().
      */
-    private lastCenter?: vec.Vec
+    private lastCenter?: Vec
 
     /**
      * Assign the last center as `tmpCenter` so that it will be restored on the next `update()`.

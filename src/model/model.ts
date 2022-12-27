@@ -8,8 +8,8 @@ import { StyleDef, paintDef2string } from './style'
 import { TransformList } from './transform'
 import Use from './use'
 import * as interaction from '../ui/interaction'
-import * as box from '../geom/box'
 import * as styles from '../ui-styles.css'
+import { Box } from 'tuff-core/box'
 
 const log = new tuff.logging.Logger("Model")
 
@@ -70,7 +70,7 @@ export interface IModel {
     count: number
     def: ModelDef
     render(parent: ModelRenderTag): void
-    localBounds: box.Box
+    localBounds: Box
 }
 
 /**
@@ -195,13 +195,13 @@ export abstract class ProjectModel<DefType extends ProjectDef, ChildType extends
     /**
      * The bounding box local to the tile's coordinates.
      */
-    abstract get localBounds(): box.Box
+    abstract get localBounds(): Box
 
     attachInteractionEmits(elem: tuff.svg.SvgParentTag) {
         interaction.attachEmits(this, elem)
     }
 
-    renderSelection(parent: ModelRenderTag, bounds: box.Box) {
+    renderSelection(parent: ModelRenderTag, bounds: Box) {
         parent.rect(styles.selectionRect, 
             {x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height})
     }

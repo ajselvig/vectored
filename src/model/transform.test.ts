@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { MatrixTransform, parseTransform, RotateTransform, ScaleTransform, transform2Mat, transforms2string, TranslateTransform } from './transform'
-import * as mat from "../geom/mat"
+import * as tuff from 'tuff-core'
+const mat = tuff.mat
 
 
 // verify that transform2Mat behaves the same way as the raw 

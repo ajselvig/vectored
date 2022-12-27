@@ -1,10 +1,12 @@
 import { ModelKey, ModelRenderTag, StyledModel, StyledModelDef } from './model'
 import Project from "./project"
-import * as vec from '../geom/vec'
 import * as tuff from 'tuff-core'
-import * as box from '../geom/box'
+const vec = tuff.vec
+const box = tuff.box
 import { transforms2string } from './transform'
 import svgpath from 'svgpath'
+import { Vec } from 'tuff-core/vec'
+import { Box } from 'tuff-core/box'
 
 const log = new tuff.logging.Logger("Path")
 
@@ -16,9 +18,9 @@ export type VertexType = 'point' | 'symmetric' | 'asymmetric' | 'disjoint'
  */
 export type Vertex = {
     type: VertexType
-    point: vec.Vec
-    out?: vec.Vec
-    in?: vec.Vec
+    point: Vec
+    out?: Vec
+    in?: Vec
 }
 
 /**
@@ -76,7 +78,7 @@ export function printPathDef(def: PathDef): string {
 /**
  * Computes the local bounding box for a path definition.
  */
-export function pathDefBounds(def: PathDef): box.Box {
+export function pathDefBounds(def: PathDef): Box {
     let points = def.subpaths.flatMap(subpath => subpath.vertices.map(v => v.point))
     // TODO: make CSS transforms actualy useful
     // if (def.transforms) {
@@ -96,7 +98,7 @@ export default class Path extends StyledModel<PathDef, never> {
         super('path', project, def, key)
     }
 
-    get localBounds(): box.Box {
+    get localBounds(): Box {
         return pathDefBounds(this.def)
     }
     
@@ -301,7 +303,7 @@ export function pathDef2d(def: PathDef): string {
     }
 
     // a convenience function to push commands to the stack
-    function command(char: string, ...vecs: vec.Vec[]) {
+    function command(char: string, ...vecs: Vec[]) {
         comps.push(`${char} ` + vecs.map(v => {return `${v.x},${v.y}`}).join(' '))
     }
 

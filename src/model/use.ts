@@ -3,7 +3,8 @@ import { StyledModelDef, StyledModel, ModelKey } from "./model"
 import Project from "./project"
 import * as tuff from 'tuff-core'
 import { transforms2string } from "./transform"
-import { Box } from "../geom/box"
+import { Box } from "tuff-core/box"
+
 
 
 

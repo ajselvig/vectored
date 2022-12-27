@@ -2,7 +2,7 @@ import Project from '../model/project'
 import Tile, { TileDef } from '../model/tile'
 import * as tuff from 'tuff-core'
 import { IModel, ModelDef, ProjectDef, StyledModelDef } from '../model/model'
-import * as box from '../geom/box'
+const box = tuff.box
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, PathDef, points2Def, printPathDef } from '../model/path'
 import {SaxesParser} from 'saxes'

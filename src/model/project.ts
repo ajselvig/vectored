@@ -1,8 +1,10 @@
-import * as box from '../geom/box'
+import * as tuff from 'tuff-core'
+const box = tuff.box
 import { SvgParser } from '../io/svg-io'
 import Model, { IModel, ModelDef, ModelKey, ModelRenderTag} from './model'
 import Tile from './tile'
 import Selection from '../ui/selection'
+import { Box } from 'tuff-core/box'
 
 type ProjectDef = ModelDef
 
@@ -37,8 +39,8 @@ export default class Project extends Model<ProjectDef, Tile> {
     /**
      * @returns the bounding box of all tiles in the project
      */
-    get boundingBox(): box.Box {
-        let b: box.Box|undefined = undefined
+    get boundingBox(): Box {
+        let b: Box|undefined = undefined
         this.eachOfType("tile", tile => {
             if (b) {
                 b = box.union(b, tile.def.bounds)

@@ -1,7 +1,9 @@
-import * as mat from "../geom/mat"
-import * as trig from '../geom/trig'
+import * as tuff from 'tuff-core'
+import { Mat } from 'tuff-core/mat'
+const mat = tuff.mat
+const trig = tuff.trig
 
-export type MatrixTransform = mat.Mat & {
+export type MatrixTransform = Mat & {
     type: 'matrix'
 }
 
@@ -48,7 +50,7 @@ export type TransformList = Array<Transform>
 /**
  * Converts a specific {Transform} into a generic {Mat} matrix.
  */
-export function transform2Mat(t: Transform): mat.Mat {
+export function transform2Mat(t: Transform): Mat {
     switch (t.type) {
         case 'matrix':
             return mat.make(t.a, t.b, t.c, t.d, t.tx, t.ty)

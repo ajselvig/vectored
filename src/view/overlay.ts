@@ -3,9 +3,10 @@ import Project from "../model/project"
 import * as tuff from 'tuff-core'
 import { Viewport } from './viewport'
 import Selection from '../ui/selection'
-import * as mat from '../geom/mat'
+const mat = tuff.mat
 import Tile from '../model/tile'
 import { SvgParentTag } from 'tuff-core/svg'
+import { Mat } from 'tuff-core/mat'
 
 const log = new tuff.logging.Logger("Overlay")
 
@@ -44,10 +45,10 @@ export class OverlayPart extends tuff.parts.Part<Viewport> {
 
 export class OverlayContext {
 
-    localToActual!: mat.Mat
+    localToActual!: Mat
     tile?: Tile
 
-    constructor(readonly parent: SvgParentTag, readonly virtualToActual: mat.Mat) {
+    constructor(readonly parent: SvgParentTag, readonly virtualToActual: Mat) {
         this.localToActual = this.virtualToActual
     }
 

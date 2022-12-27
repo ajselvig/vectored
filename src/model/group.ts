@@ -5,7 +5,8 @@ import Project from "./project"
 import { transforms2string } from './transform'
 import * as tuff from 'tuff-core'
 import Use from './use'
-import * as box from '../geom/box'
+import { Box } from 'tuff-core/box'
+const box = tuff.box
 
 export default class Group extends StyledModel<StyledModelDef, Path|Use|Group> {
     
@@ -13,7 +14,7 @@ export default class Group extends StyledModel<StyledModelDef, Path|Use|Group> {
         super('group', project, def, key)
     }
 
-    get localBounds(): box.Box {
+    get localBounds(): Box {
         return box.unionAll(this.children.map(c => c.localBounds))
     }
 
