@@ -3,10 +3,12 @@ import Project from "./project"
 import * as tuff from 'tuff-core'
 const vec = tuff.vec
 const box = tuff.box
-import { transforms2string } from './transform'
+const mat = tuff.mat
 import svgpath from 'svgpath'
 import { Vec } from 'tuff-core/vec'
 import { Box } from 'tuff-core/box'
+import { Mat } from 'tuff-core/mat'
+import { Transform, transform2Mat } from './transform'
 
 const log = new tuff.logging.Logger("Path")
 
@@ -90,6 +92,45 @@ export function pathDefBounds(def: PathDef): Box {
 }
 
 /**
+ * Transforms a subpath
+ * @param subpath the input subpath definition
+ * @param transform the transform to apply
+ * @returns the transformed subpath
+ */
+function transformSubpath(subpath: SubpathDef, transform: Mat|Transform): SubpathDef {
+    const vertices = subpath.vertices.map(vIn => {
+        const vOut = {...vIn}
+        const m = 'type' in transform ? transform2Mat(transform) : transform
+        vOut.point = mat.transform(m, vIn.point)
+
+        // translate the control points to absolute coordinates before transforming
+        if (vIn.in) {
+            vOut.in = vec.subtract(mat.transform(m, vec.add(vIn.point, vIn.in)), vOut.point)
+        }
+        if (vIn.out) {
+            vOut.out = vec.subtract(mat.transform(m, vec.add(vIn.point, vIn.out)), vOut.point)
+        }
+
+        return vOut
+    })
+    return {vertices, openOrClosed: subpath.openOrClosed}
+}
+
+/**
+ * Transforms a path
+ * @param def the input path
+ * @param transform a transform to apply to the path
+ * @returns the transformed path
+ */
+export function transformPath(def: PathDef, transform: Mat|Transform): PathDef {
+    const newDef = {...def}
+    newDef.subpaths = def.subpaths.map(subpath => {
+        return transformSubpath(subpath, transform)
+    })
+    return newDef
+}
+
+/**
  * A series of vertices forming an open or closed path of straight and/or curved edges.
  */
 export default class Path extends StyledModel<PathDef, never> {
@@ -108,9 +149,9 @@ export default class Path extends StyledModel<PathDef, never> {
             id: this.id,
             d: d
         }
-        if (this.def.transforms) {
-            attrs.transform = transforms2string(this.def.transforms)
-        }
+        // if (this.def.transforms) {
+        //     attrs.transform = transforms2string(this.def.transforms)
+        // }
         const style = this.computedStyle
         if (style) {
             this.applyStyle(attrs, style)

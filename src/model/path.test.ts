@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
-import {d2PathDef, PathDef, pathDef2d, points2Def, printPathDef} from './path'
+import {d2PathDef, PathDef, pathDef2d, points2Def, printPathDef, transformPath} from './path'
 import * as tuff from 'tuff-core'
+const mat = tuff.mat
 const vec = tuff.vec
 
 function printDefs(d: string, def: PathDef) {
@@ -110,5 +111,22 @@ test("d curve parsing", () => {
     expect(subpath.vertices[2].type).eq("point")
     expect(pathDef2d(def)).eq(d)
 
+
+})
+
+test("path transforming", () => {
+    const d = "M 0,0 C 0,1 2,1 2,0"
+    const def = d2PathDef(d)
+    printDefs(d, def)
+    const vertices = def.subpaths[0].vertices
+    
+    // translate
+    const dx = 1
+    const dy = 2
+    const translate = mat.translate(mat.identity(), dx, dy)
+    const translatedDef = transformPath(def, translate)
+    const translatedVertices = translatedDef.subpaths[0].vertices
+    expect(translatedVertices[0].point.x).eq(vertices[0].point.x + dx)
+    expect(translatedVertices[0].point.y).eq(vertices[0].point.y + dy)
 
 })

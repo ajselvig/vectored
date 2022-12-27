@@ -4,10 +4,10 @@ import * as tuff from 'tuff-core'
 import { IModel, ModelDef, ProjectDef, StyledModelDef } from '../model/model'
 const box = tuff.box
 import Group from '../model/group'
-import Path, { d2PathDef, OpenOrClosed, PathDef, points2Def, printPathDef } from '../model/path'
+import Path, { d2PathDef, OpenOrClosed, PathDef, points2Def, printPathDef, transformPath } from '../model/path'
 import {SaxesParser} from 'saxes'
 import { attributes2StyleDef, attrs2GradientStop, attrs2LinearGradientDef, attrs2RadialGradientDef, LinearGradientDef, RadialGradientDef } from '../model/style'
-import { parseTransform } from '../model/transform'
+import { parseTransform, transform2Mat, TransformList } from '../model/transform'
 import Use, { UseDef } from '../model/use'
 
 const log = new tuff.logging.Logger("SVG IO")
@@ -236,11 +236,14 @@ export class SvgParser {
             throw `Polygon/Polyline tag doesn't have a 'points' attribute!`
         }
         log.debug(`Parsing polygon with with points "${points}"`, attrs)
-        const def: PathDef = {
+        let def: PathDef = {
             subpaths: [points2Def(points, openOrClosed)]
         }
         this.parseBaseDef(attrs, def)
-        this.parseTransforms(attrs, def)
+        const transforms = this.parseTransforms(attrs, def)
+        for (const transform of transforms.reverse()) {
+            def = transformPath(def, transform)
+        }
         this.parseStyle(attrs, def)
         const path = new Path(project, def)
         path.def = def
@@ -250,9 +253,12 @@ export class SvgParser {
     parsePath(attrs: RawAttrs, project: Project) {
         const d = attrs["d"]!
         log.debug(`Parsing path`, attrs)
-        const def = d2PathDef(d)
+        let def = d2PathDef(d)
         this.parseBaseDef(attrs, def)
-        this.parseTransforms(attrs, def)
+        const transforms = this.parseTransforms(attrs, def)
+        for (const transform of transforms.reverse()) {
+            def = transformPath(def, transform)
+        }
         this.parseStyle(attrs, def)
         const path = new Path(project, def)
         log.debug(`Parsed path "${d}" to:`, printPathDef(path.def))
@@ -272,13 +278,15 @@ export class SvgParser {
         return new Use(project, def)
     }
 
-    parseTransforms(attrs: RawAttrs, def: ProjectDef) {
+    parseTransforms(attrs: RawAttrs, def: ProjectDef): TransformList {
         if (attrs['transform']) {
             const transforms = parseTransform(attrs['transform'])
             if (transforms.length) {
                 def.transforms = transforms
+                return transforms
             }
         }
+        return []
     }
 
     parseStyle(attrs: RawAttrs, def: StyledModelDef) {
