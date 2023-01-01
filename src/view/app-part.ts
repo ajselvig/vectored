@@ -9,12 +9,14 @@ import tsUrl from '/assets/test/typescript.svg'
 import viteUrl from '/assets/test/vite.svg'
 import npmUrl from '/assets/test/npm.svg'
 import svgUrl from '/assets/test/svg.svg'
+import vitestUrl from '/assets/test/vitest.svg'
 
 const urls = [
     tsUrl,
     viteUrl,
     npmUrl,
-    svgUrl
+    svgUrl,
+    vitestUrl
 ]
 
 tuff.logging.Logger.level = 'info'

@@ -237,6 +237,9 @@ export abstract class StyledModel<DefType extends StyledModelDef, ChildType exte
         if (style.fill) {
             attrs.fill = paintDef2string(style.fill)
         }
+        if (style.fillOpacity) {
+            attrs.fillOpacity = style.fillOpacity
+        }
         if (style.stroke) {
             attrs.stroke = paintDef2string(style.stroke)
         }

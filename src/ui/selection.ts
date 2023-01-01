@@ -229,12 +229,13 @@ export class SelectionInteractor extends Interactor {
             height: bounds.height,
             fill: 'transparent',
             stroke: styles.colors.selection,
-            strokeWidth: 3,
+            strokeWidth: 2,
             strokeDasharray: '6 6'
         }
         if (reason == 'hover') {
-            attrs.strokeWidth = 2
-            attrs.strokeDasharray = '3 3'
+            attrs.strokeWidth = 1
+            attrs.strokeDasharray = ''
+            attrs.stroke = styles.colors.border
         }
         ctx.parent.rect(attrs)
     }

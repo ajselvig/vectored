@@ -101,6 +101,7 @@ export type DashDef = {
 export type StyleDef = {
     fill?: PaintDef
     fillRule?: 'nonzero' | 'evenodd'
+    fillOpacity?: number
     stroke?: PaintDef
     strokeDash?: DashDef
     strokeWidth?: number
@@ -160,19 +161,23 @@ export function attributes2StyleDef(attrs: Record<string,string>): StyleDef | un
         switch (k) {
             case 'fill':
                 def ||= {}
-                def['fill'] = parsePaintDef(v)
+                def.fill = parsePaintDef(v)
+                break
+            case 'fill-opacity':
+                def ||= {}
+                def.fillOpacity = parseFloat(v)
                 break
             case 'stroke':
                 def ||= {}
-                def['stroke'] = parsePaintDef(v)
+                def.stroke = parsePaintDef(v)
                 break
             case 'stroke-width':
                 def ||= {}
-                def['strokeWidth'] = parseInt(v)
+                def.strokeWidth = parseInt(v)
                 break
             case 'opacity':
                 def ||= {}
-                def['opacity'] = parseFloat(v)
+                def.opacity = parseFloat(v)
                 break
 
         }
