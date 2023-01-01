@@ -149,9 +149,6 @@ export default class Path extends StyledModel<PathDef, never> {
             id: this.id,
             d: d
         }
-        // if (this.def.transforms) {
-        //     attrs.transform = transforms2string(this.def.transforms)
-        // }
         const style = this.computedStyle
         if (style) {
             this.applyStyle(attrs, style)

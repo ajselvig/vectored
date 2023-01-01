@@ -1,20 +1,22 @@
 import Project from '../model/project'
 import Tile, { TileDef } from '../model/tile'
 import * as tuff from 'tuff-core'
-import { IModel, ModelDef, ProjectDef, StyledModelDef } from '../model/model'
+import { IModel, ModelDef, StyledModelDef } from '../model/model'
 const box = tuff.box
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, PathDef, points2Def, printPathDef, transformPath } from '../model/path'
 import {SaxesParser} from 'saxes'
 import { attributes2StyleDef, attrs2GradientStop, attrs2LinearGradientDef, attrs2RadialGradientDef, LinearGradientDef, RadialGradientDef } from '../model/style'
-import { parseTransform, transform2Mat, TransformList } from '../model/transform'
+import { parseTransform, transform2Mat } from '../model/transform'
 import Use, { UseDef } from '../model/use'
+import { Mat } from 'tuff-core/mat'
+const mat = tuff.mat
 
 const log = new tuff.logging.Logger("SVG IO")
 
 type RawAttrs = Record<string, string>
 
-type ParseParent = {tag: string, model: IModel|null}
+type ParseParent = {tag: string, model: IModel|null, transform: Mat}
 
 /**
  * Parses a raw SVG document into a {Tile}.
@@ -27,6 +29,7 @@ export class SvgParser {
     }
 
     currentGradient?: LinearGradientDef | RadialGradientDef
+    currentTransform = mat.identity()
 
     toTile(project: Project): Tile {
         const stack = Array<ParseParent>()
@@ -45,7 +48,7 @@ export class SvgParser {
         const idMap: {[id: string]: IModel} = {}
         
         // pushes a child to the stack and adds it to the previous parent
-        const pushParent = (tag: string, model: IModel|null) => {
+        const pushParent = (tag: string, model: IModel|null, transform: Mat|null) => {
             if (model) {
                 if (stack.length) {
                     const parent = stack[stack.length-1]
@@ -71,15 +74,25 @@ export class SvgParser {
                     idMap[model.def.externId] = model
                 }
             }
-            stack.push({tag, model})
+
+            // apply the new transform to the previous one
+            if (transform) {
+                this.currentTransform = tuff.mat.multiply(this.currentTransform, transform)
+            }
+            stack.push({tag, model, transform: this.currentTransform})
         }
 
         // keep track of all use elements imported
         const uses = Array<Use>()
 
+        // peeks at the latest parent on the stack
+        const peekParent = () => {
+            return stack[stack.length-1]
+        }
+
         // pops the latest parent from the stack
         const popParent = (tag: string) => {
-            const parent = stack[stack.length-1]
+            const parent = peekParent()
             if (parent.tag == tag) {
                 stack.pop()
                 if (parent.model == topTile() && tileStack.length > 1) {
@@ -89,11 +102,13 @@ export class SvgParser {
             else {
                 throw `Popping tag ${tag} when the top of the stack is ${parent.tag}, this doesn't seem right!`
             }
-        }
-
-        // peeks at the latest parent on the stack
-        const peekParent = () => {
-            return stack[stack.length-1]
+            const grandparent = peekParent()
+            if (grandparent) {
+                this.currentTransform = grandparent.transform
+            }
+            else {
+                this.currentTransform = mat.identity()
+            }
         }
 
         // happy-dom does not support using DOMParser to parse XML documents:
@@ -111,21 +126,22 @@ export class SvgParser {
             }
             const attrs = tag.attributes
             let child: IModel|null = null
+            let transform: Mat|null = null
             switch (tagName) {
                 case "svg":
                     child = this.parseSvg(attrs, project)
                     break
                 case "g":
-                    child = this.parseGroup(attrs, project)
+                    [child, transform] = this.parseGroup(attrs, project)
                     break
                 case "polygon":
-                    child = this.parsePolygon(attrs, project, "closed")
+                    [child, transform] = this.parsePolygon(attrs, project, "closed")
                     break
                 case "polyline":
-                    child = this.parsePolygon(attrs, project, "open")
+                    [child, transform] = this.parsePolygon(attrs, project, "open")
                     break
                 case "path":
-                    child = this.parsePath(attrs, project)
+                    [child, transform] = this.parsePath(attrs, project)
                     break
                 case "lineargradient":
                     this.parseLinearGradient(attrs, topTile())
@@ -140,15 +156,14 @@ export class SvgParser {
                     log.debug(`title tag`, tag)
                     break
                 case "use":
-                    const use = this.parseUse(attrs, project)
-                    uses.push(use)
-                    child = use
+                    [child, transform] = this.parseUse(attrs, project)
+                    uses.push(child as Use)
                     break
                 default:
                     skippedTags[tagName] = true
                     return
             }
-            pushParent(tagName, child)
+            pushParent(tagName, child, transform)
         })
 
         parser.on("text", text => {
@@ -221,16 +236,16 @@ export class SvgParser {
         return tile
     }
 
-    parseGroup(attrs: RawAttrs, project: Project): Group {
+    parseGroup(attrs: RawAttrs, project: Project): [Group,Mat|null] {
         log.debug(`Parsing group`, attrs)
         const def = {}
         this.parseBaseDef(attrs, def)
-        this.parseTransforms(attrs, def)
+        const transform = this.parseTransforms(attrs)
         this.parseStyle(attrs, def)
-        return new Group(project, def)
+        return [new Group(project, def), transform]
     }
 
-    parsePolygon(attrs: RawAttrs, project: Project, openOrClosed: OpenOrClosed) {
+    parsePolygon(attrs: RawAttrs, project: Project, openOrClosed: OpenOrClosed): [Path,Mat|null] {
         const points = attrs['points']
         if (!points) {
             throw `Polygon/Polyline tag doesn't have a 'points' attribute!`
@@ -240,32 +255,36 @@ export class SvgParser {
             subpaths: [points2Def(points, openOrClosed)]
         }
         this.parseBaseDef(attrs, def)
-        const transforms = this.parseTransforms(attrs, def)
-        for (const transform of transforms.reverse()) {
-            def = transformPath(def, transform)
+        const transform = this.parseTransforms(attrs)
+        let totalTransform = this.currentTransform
+        if (transform) {
+            totalTransform = mat.multiply(totalTransform, transform)
         }
+        def = transformPath(def, totalTransform)
         this.parseStyle(attrs, def)
         const path = new Path(project, def)
         path.def = def
-        return path
+        return [path, transform]
     }
 
-    parsePath(attrs: RawAttrs, project: Project) {
+    parsePath(attrs: RawAttrs, project: Project): [Path,Mat|null] {
         const d = attrs["d"]!
         log.debug(`Parsing path`, attrs)
         let def = d2PathDef(d)
         this.parseBaseDef(attrs, def)
-        const transforms = this.parseTransforms(attrs, def)
-        for (const transform of transforms.reverse()) {
-            def = transformPath(def, transform)
+        const transform = this.parseTransforms(attrs)
+        let totalTransform = this.currentTransform
+        if (transform) {
+            totalTransform = mat.multiply(totalTransform, transform)
         }
+        def = transformPath(def, totalTransform)
         this.parseStyle(attrs, def)
         const path = new Path(project, def)
         log.debug(`Parsed path "${d}" to:`, printPathDef(path.def))
-        return path
+        return [path, transform]
     }
 
-    parseUse(attrs: RawAttrs, project: Project): Use {
+    parseUse(attrs: RawAttrs, project: Project): [Use,Mat|null] {
         log.debug(`Parsing use tag`, attrs)
         let referenceId = attrs['xlink:href'] || attrs['href']
         if (referenceId?.length) {
@@ -273,20 +292,34 @@ export class SvgParser {
         }
         const def: UseDef = {referenceId}
         this.parseBaseDef(attrs, def)
-        this.parseTransforms(attrs, def)
+        const transform = this.parseTransforms(attrs)
+        if (transform) {
+            // we need to undo the current transform, add this element's transform,
+            // then add the current transform back
+            log.info(`this.currentTransform: `, this.currentTransform)
+            let totalTransform = mat.multiply(transform, mat.invert(this.currentTransform))
+            totalTransform = mat.multiply(this.currentTransform, totalTransform)
+            def.transform = totalTransform
+        }
+        else {
+            def.transform = this.currentTransform
+        }
         this.parseStyle(attrs, def)
-        return new Use(project, def)
+        return [new Use(project, def), transform]
     }
 
-    parseTransforms(attrs: RawAttrs, def: ProjectDef): TransformList {
+    parseTransforms(attrs: RawAttrs): Mat | null {
         if (attrs['transform']) {
-            const transforms = parseTransform(attrs['transform'])
-            if (transforms.length) {
-                def.transforms = transforms
-                return transforms
+            const list = parseTransform(attrs['transform'])
+            if (list.length) {
+                let m = mat.identity()
+                for (const transform of list) {
+                    m = mat.multiply(m, transform2Mat(transform))
+                }
+                return m
             }
         }
-        return []
+        return null
     }
 
     parseStyle(attrs: RawAttrs, def: StyledModelDef) {

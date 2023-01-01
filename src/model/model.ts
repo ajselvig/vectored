@@ -5,7 +5,6 @@ import Tile from './tile'
 import Group from './group'
 import Path from './path'
 import { StyleDef, paintDef2string } from './style'
-import { TransformList } from './transform'
 import Use from './use'
 import * as interaction from '../ui/interaction'
 import * as styles from '../ui-styles.css'
@@ -177,9 +176,7 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
 /**
  * Model definition for models belonging to a project.
  */
-export type ProjectDef = ModelDef & {
-    transforms?: TransformList
-}
+export type ProjectDef = ModelDef & {}
 
 
 /**

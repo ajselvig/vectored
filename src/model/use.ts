@@ -2,14 +2,16 @@ import { SvgParentTag } from "tuff-core/svg"
 import { StyledModelDef, StyledModel, ModelKey } from "./model"
 import Project from "./project"
 import * as tuff from 'tuff-core'
-import { transforms2string } from "./transform"
 import { Box } from "tuff-core/box"
+import { Mat } from "tuff-core/mat"
+import { mat2string } from "./transform"
 
 
 
 
 export type UseDef = StyledModelDef & {
     referenceId: string
+    transform?: Mat
     x?: number
     y?: number
     width?: number
@@ -40,12 +42,12 @@ export default class Use extends StyledModel<UseDef, never> {
             id: this.id,
             href: '#' + this.def.referenceId
         }
-        if (this.def.transforms) {
-            attrs.transform = transforms2string(this.def.transforms)
-        }
         const style = this.computedStyle
         if (style) {
             this.applyStyle(attrs, style)
+        }
+        if (this.def.transform) {
+            attrs.transform = mat2string(this.def.transform)
         }
         const elem = parent.use(attrs)
     

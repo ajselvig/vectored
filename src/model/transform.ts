@@ -69,6 +69,14 @@ export function transform2Mat(t: Transform): Mat {
     }
 }
 
+/**
+ * Serializes a transformation matrix into it's SVG string representation.
+ * @param m a raw transformation matrix
+ */
+export function mat2string(m: Mat): string {
+    const t = {type: 'matrix',...m} as const
+    return transform2string(t)
+}
 
 /**
  * Converts a specific {Transform} into its SVG string representation.
