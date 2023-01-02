@@ -9,6 +9,7 @@ import Tile from "../model/tile"
 import { arrays } from "tuff-core"
 import { Vec } from "tuff-core/vec"
 import { Box } from "tuff-core/box"
+import { AppPart } from "../view/app-part"
 
 const log = new tuff.logging.Logger("Selection")
 
@@ -16,7 +17,7 @@ export type SelectionListener = (fn: Selection) => any
 
 export default class Selection {
 
-    constructor() {
+    constructor(readonly app: AppPart) {
 
     }
 

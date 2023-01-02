@@ -5,10 +5,11 @@ import * as tuff from 'tuff-core'
 import { IModel, ModelKey } from '../model/model'
 import Tile from '../model/tile'
 import Selection from '../ui/selection'
+import { ProjectLevelPart, ProjectState } from './project-level-part'
 
 const log = new tuff.logging.Logger("Tree")
 
-export class Tree extends tuff.parts.Part<Project> {
+export class Tree extends ProjectLevelPart<ProjectState> {
 
     readonly tileParts: {[id: string]: TreeTilePart} = {}
 
@@ -19,7 +20,7 @@ export class Tree extends tuff.parts.Part<Project> {
     makeTileParts() {
         const parts = this.tileParts
         let newPart = false
-        this.state.eachOfType("tile", tile => {
+        this.state.project.eachOfType("tile", tile => {
             if (!parts[tile.id]) {
                 parts[tile.id] = this.makePart(TreeTilePart, tile)
                 newPart = true
@@ -31,7 +32,7 @@ export class Tree extends tuff.parts.Part<Project> {
     }
     
     render(parent: tuff.parts.PartTag) {
-        this.state.eachOfType("tile", tile => {
+        this.state.project.eachOfType("tile", tile => {
             let tilePart = this.tileParts[tile.id]
             if (tilePart) {
                 parent.part(tilePart)

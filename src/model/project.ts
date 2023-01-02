@@ -3,24 +3,25 @@ const box = tuff.box
 import { SvgParser } from '../io/svg-io'
 import Model, { IModel, ModelDef, ModelKey, ModelRenderTag} from './model'
 import Tile from './tile'
-import Selection from '../ui/selection'
 import { Box } from 'tuff-core/box'
+import { AppPart } from '../view/app-part'
 
 type ProjectDef = ModelDef
 
 export default class Project extends Model<ProjectDef, Tile> {
     readonly items: {[id: string]: IModel}
 
-    readonly selection: Selection
-
-    constructor(key?: ModelKey|null) {
+    constructor(readonly app: AppPart, key?: ModelKey|null) {
         super('project', {}, key)
         this.items = {}
-        this.selection = new Selection()
     }
 
     get project(): Project {
         return this
+    }
+
+    get selection() {
+        return this.app.selection
     }
 
     register(item: IModel) {

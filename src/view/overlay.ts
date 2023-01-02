@@ -17,8 +17,8 @@ export class OverlayPart extends tuff.parts.Part<Viewport> {
 
 
     async init() {
-        this.project = this.state.state
-        this.selection = this.project.selection
+        this.project = this.state.project
+        this.selection = this.project.app.selection
 
         this.selection.addListener("overlay-part", _ => {
             log.info("Selection changed")

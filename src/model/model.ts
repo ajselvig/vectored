@@ -204,7 +204,7 @@ export abstract class ProjectModel<DefType extends ProjectDef, ChildType extends
     }
 
     get isSelected(): boolean{
-        return this.project.selection.isSelected(this.key)
+        return this.project.app.selection.isSelected(this.key)
     }
 
 }

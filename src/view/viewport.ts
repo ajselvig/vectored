@@ -1,16 +1,16 @@
 import * as styles from '../ui-styles.css'
-import Project from "../model/project"
 import * as tuff from 'tuff-core'
 import { TilePart } from "./tile-part"
 const box = tuff.box
 const mat = tuff.mat
 const vec = tuff.vec
-import Selection, { SelectionInteractor } from '../ui/selection'
 import * as interaction from '../ui/interaction'
 import { OverlayPart } from './overlay'
 import { IModel, ModelKey } from '../model/model'
 import { Box } from 'tuff-core/box'
 import { Vec } from 'tuff-core/vec'
+import { Interactor } from '../ui/interaction'
+import { ProjectLevelPart, ProjectState } from './project-level-part'
 
 const log = new tuff.logging.Logger("Viewport")
 
@@ -23,7 +23,7 @@ export const zoomOutKey = tuff.messages.untypedKey()
 
 const planeKey = tuff.messages.untypedKey()
 
-export class Viewport extends tuff.parts.Part<Project> {
+export class Viewport extends ProjectLevelPart<ProjectState> {
     overlayPart!: OverlayPart
 
     planeVirtualToActual = mat.identity()
@@ -38,10 +38,6 @@ export class Viewport extends tuff.parts.Part<Project> {
 
     scrollKey = tuff.messages.untypedKey()
 
-    selection!: Selection
-
-    interactor!: interaction.Interactor
-
     async init() {
         this.onClick(zoomInKey, _ => {
             this.zoomIn()
@@ -54,15 +50,9 @@ export class Viewport extends tuff.parts.Part<Project> {
             // log.info('scroll')
             // this.stale()
         })
-        this.selection = this.state.selection
-        this.selection.addListener(this.id, _ => {
-            // log.info("Viewport selection changed")
-            // this.stale()
-        })
 
         this.overlayPart = this.makePart(OverlayPart, this as Viewport)
 
-        this.interactor = new SelectionInteractor(this.selection)
 
         this.onMouseOver(interaction.key, m => {
             log.debug(`Model mouse over`, m)
@@ -95,11 +85,27 @@ export class Viewport extends tuff.parts.Part<Project> {
         })
     }
 
+    get app() {
+        return this.state.app
+    }
+
+    get project() {
+        return this.state.project
+    }
+
+    get interactor(): Interactor {
+        return this.app.interactor
+    }
+
+    get selection() {
+        return this.app.selection
+    }
+
     getModel(m: tuff.messages.Message<'mouseover' | 'mouseout' | 'mousedown', ModelKey>): IModel {
         m.event.stopPropagation()
         m.event.stopImmediatePropagation()
         m.event.preventDefault()
-        return this.state.find(m.data)
+        return this.state.project.find(m.data)
     }
 
     update(elem: HTMLElement): void {
@@ -132,7 +138,7 @@ export class Viewport extends tuff.parts.Part<Project> {
     makeTileParts() {
         const parts = this.tileParts
         let newPart = false
-        this.state.eachOfType("tile", tile => {
+        this.project.eachOfType("tile", tile => {
             if (!parts[tile.id]) {
                 parts[tile.id] = this.makePart(TilePart, tile)
                 newPart = true
@@ -172,7 +178,7 @@ export class Viewport extends tuff.parts.Part<Project> {
      * Sets `tmpCenter` to the center of the actual content.
      */
     centerOnContent() {
-        const tilesBox = this.state.boundingBox
+        const tilesBox = this.project.boundingBox
         this.tmpCenter = box.center(tilesBox)
         log.info(`Centering on content at`, this.tmpCenter)
         this.dirty()
@@ -202,7 +208,7 @@ export class Viewport extends tuff.parts.Part<Project> {
     render(parent: tuff.parts.PartTag) {
 
         // compute the plane size based on the bounding box of the tiles
-        const tilesBox = this.state.boundingBox
+        const tilesBox = this.project.boundingBox
         
         // compute larger spans so that there's room to scroll,
         // with a minimum for small projects
@@ -224,7 +230,7 @@ export class Viewport extends tuff.parts.Part<Project> {
         this.planeVirtualToActual = builder.build()
         this.planeActualToVirtual = builder.buildInverse()
         
-        const gridSize = this.state.planeGridSize
+        const gridSize = this.project.planeGridSize
 
         parent.div(styles.viewportScroller, scroller => {
             scroller.emitScroll(this.scrollKey)
