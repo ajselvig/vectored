@@ -2,7 +2,20 @@ import { AppPart } from "../view/app-part"
 import * as tuff from 'tuff-core'
 const log = new tuff.logging.Logger("Actions")
 
-type ActionSet = Set<ActionBase>
+/**
+ * Groups a named set of actions together to be applied at the same time.
+ */
+type ActionSet = {
+    name: string
+    actions: Set<ActionBase>
+}
+
+function makeActionSet(name: string, actions: Iterable<ActionBase>): ActionSet {
+    return {
+        name,
+        actions: new Set(actions)
+    }
+}
 
 /**
  * Base class for all user actions tracked by `ActionHistory`.
@@ -28,69 +41,63 @@ export class ActionHistory {
         
     }
 
-    numActions() : number {
+    get count() : number {
         return this.actionSets.length
     }
 
-    pushAction(action: ActionBase) {
-        this.pushSet(new Set([action]))
-    }
-
-    pushActions(actions: Iterable<ActionBase>) {
-        this.pushSet(new Set(actions))
+    push(name: string, actions: Iterable<ActionBase>) {
+        this.pushSet(makeActionSet(name, actions))
     }
 
     pushSet(set: ActionSet) {
-        if (this.index >= this.numActions()) {
+        if (this.index >= this.count) {
             this.actionSets = this.actionSets.slice(0, this.index)
         }
         this.actionSets.push(set)
         this.index = this.actionSets.length-1
         this.applySet(set)
-        log.info(`Action history at ${this.index}`)
+        log.info(`Action history at ${this.index} after ${set.name}`)
     }
 
     private applySet(set: ActionSet) {
-        set.forEach((a) => {
+        set.actions.forEach((a) => {
             a.apply(this.app)
         })
     }
 
     private unapplySet(set: ActionSet) {
-        set.forEach((a) => {
+        set.actions.forEach((a) => {
             a.unapply(this.app)
         })
     }
 
-    canUndo() {
+    get canUndo() {
         return this.index > -1
     }
 
     undo() : boolean {
-        log.info('Undo')
         if (this.index < 0) {
             return false
         }
         const set = this.actionSets[this.index]
         this.unapplySet(set)
         this.index -= 1
-        log.info(`Action history at ${this.index}`)
+        log.info(`Action history at ${this.index} after ${set.name} undo`)
         return true
     }
 
-    canRedo() {
-        return this.index < this.numActions()-1
+    get canRedo() {
+        return this.index < this.count-1
     }
 
     redo() : boolean {
-        log.info('Redo')
-        if (this.index >= this.numActions()-1) {
+        if (this.index >= this.count-1) {
             return false
         }
         this.index += 1
         const set = this.actionSets[this.index]
         this.applySet(set)
-        log.info(`Action history at ${this.index}`)
+        log.info(`Action history at ${this.index} after ${set.name} redo`)
         return true
     }
 

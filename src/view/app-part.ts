@@ -4,6 +4,7 @@ import * as styles from '../ui-styles.css'
 import { TopBar } from "./top-bar"
 import { BottomBar } from "./bottom-bar"
 import * as tuff from 'tuff-core'
+const messages = tuff.messages
 import { ActionHistory } from "../ui/actions"
 import * as interaction from '../ui/interaction'
 
@@ -37,7 +38,7 @@ export class AppPart extends tuff.parts.Part<{}> {
 
     interactor!: interaction.Interactor
 
-    interactionKey = tuff.messages.untypedKey()
+    interactionKey = messages.untypedKey()
 
     async init() {
         const project = new Project()
@@ -61,6 +62,16 @@ export class AppPart extends tuff.parts.Part<{}> {
 
         this.topBar = this.makeStatelessPart(TopBar)
         this.bottomBar = this.makeStatelessPart(BottomBar)
+
+        this.onKeyPress(messages.keyPress('z', 'control/command'), _ => {
+            log.info("Undo")
+            this.history.undo()
+        })
+
+        this.onKeyPress(messages.keyPress('z', 'control/command', 'shift'), _ => {
+            log.info("Redo")
+            this.history.redo()
+        })
     }
     
     render(parent: tuff.parts.PartTag) {        

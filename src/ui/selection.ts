@@ -140,7 +140,7 @@ export default class Selection {
         const actions = arrays.compact(possibleActions)
         if (actions.length) {
             log.info(`Translating ${actions.length} items`, actions)
-            this.app.history.pushActions(actions)
+            this.app.history.push('translate', actions)
         }
         else {
             log.info("Nothing to translate")
