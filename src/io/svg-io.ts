@@ -1,7 +1,7 @@
 import Project from '../model/project'
 import Tile, { TileDef } from '../model/tile'
 import * as tuff from 'tuff-core'
-import { IModel, ModelDef, StyledModelDef } from '../model/model'
+import { IModel, ModelDef } from '../model/model'
 const box = tuff.box
 import Group from '../model/group'
 import Path, { d2PathDef, OpenOrClosed, PathDef, points2Def, printPathDef, transformPath } from '../model/path'
@@ -322,7 +322,7 @@ export class SvgParser {
         return null
     }
 
-    parseStyle(attrs: RawAttrs, def: StyledModelDef) {
+    parseStyle(attrs: RawAttrs, def: ModelDef) {
         const style = attributes2StyleDef(attrs)
         if (style) {
             def.style = style

@@ -11,6 +11,7 @@ import { Box } from 'tuff-core/box'
 import { Vec } from 'tuff-core/vec'
 import { Interactor } from '../ui/interaction'
 import { ProjectLevelPart, ProjectState } from './project-level-part'
+import { tileUpdatedKey } from '../model/tile'
 
 const log = new tuff.logging.Logger("Viewport")
 
@@ -83,6 +84,15 @@ export class Viewport extends ProjectLevelPart<ProjectState> {
             this.selection.clear()
             this.overlayPart.dirty()
         })
+
+        this.listenMessage(tileUpdatedKey, m => {
+            log.info(`Tile ${m.data.id} updated`)
+            const tilePart = this.getTilePart(m.data.id)
+            if (tilePart) {
+                tilePart.dirty()
+                this.overlayPart.dirty()
+            }
+        }, {attach: "passive"})
     }
 
     get app() {
@@ -147,6 +157,10 @@ export class Viewport extends ProjectLevelPart<ProjectState> {
         if (newPart) {
             this.dirty()
         }
+    }
+
+    getTilePart(id: string): TilePart | undefined {
+        return this.tileParts[id]
     }
 
 

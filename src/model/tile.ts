@@ -10,11 +10,17 @@ import Use from './use'
 import { DefsTag } from 'tuff-core/svg'
 import { Box } from 'tuff-core/box'
 
+
+/**
+ * Emit this key when a tile changes and needs to be re-rendered.
+ */
+export const tileUpdatedKey = tuff.messages.typedKey<{id: string}>()
+
 export type TileDef = {
     bounds: Box
 } & ModelDef
 
-export default class Tile extends ProjectModel<TileDef, Path | Group | Use> {
+export default class Tile extends ProjectModel<'tile', Path | Group | Use> {
 
     constructor(readonly project: Project, def: TileDef, key?: ModelKey|null) {
         super('tile', project, def, key)

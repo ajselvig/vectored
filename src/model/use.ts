@@ -1,5 +1,5 @@
 import { SvgParentTag } from "tuff-core/svg"
-import { StyledModelDef, StyledModel, ModelKey } from "./model"
+import { ModelDef, StyledModel, ModelKey } from "./model"
 import Project from "./project"
 import * as tuff from 'tuff-core'
 import { Box } from "tuff-core/box"
@@ -9,7 +9,7 @@ import { mat2string } from "./transform"
 
 
 
-export type UseDef = StyledModelDef & {
+export type UseDef = ModelDef & {
     referenceId: string
     transform?: Mat
     x?: number
@@ -21,7 +21,7 @@ export type UseDef = StyledModelDef & {
 /**
  * Represents an SVG <use> element - creates a runtime copy of another element.
  */
-export default class Use extends StyledModel<UseDef, never> {
+export default class Use extends StyledModel<'use', never> {
 
     constructor(readonly project: Project, def: UseDef, key?: ModelKey) {
         super('use', project, def, key)

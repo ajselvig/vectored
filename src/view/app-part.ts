@@ -40,7 +40,7 @@ export class AppPart extends tuff.parts.Part<{}> {
     interactionKey = tuff.messages.untypedKey()
 
     async init() {
-        const project = new Project(this)
+        const project = new Project()
 
         this.history = new ActionHistory(this)
         

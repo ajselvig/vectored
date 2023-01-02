@@ -3,10 +3,10 @@ import * as styles from '../ui-styles.css'
 import * as tuff from 'tuff-core'
 const mat = tuff.mat
 const box = tuff.box
+const arrays = tuff.arrays
 import { Interactor } from "./interaction"
 import { OverlayContext } from "../view/overlay"
 import Tile from "../model/tile"
-import { arrays } from "tuff-core"
 import { Vec } from "tuff-core/vec"
 import { Box } from "tuff-core/box"
 import { AppPart } from "../view/app-part"
@@ -132,9 +132,19 @@ export default class Selection {
     hoverItem?: IModel = undefined
 
 
-    move(v: Vec) {
-        log.info(`Moving selection`, v)
-
+    translate(v: Vec) {
+        log.info(`Translating selection`, v)
+        const possibleActions = Object.values(this.items).map(item => {
+            return item.computeTranslateAction(v)
+        })
+        const actions = arrays.compact(possibleActions)
+        if (actions.length) {
+            log.info(`Translating ${actions.length} items`, actions)
+            this.app.history.pushActions(actions)
+        }
+        else {
+            log.info("Nothing to translate")
+        }
     }
 
 }
@@ -171,19 +181,19 @@ export class SelectionInteractor extends Interactor {
         
         switch (m.data.key) {
             case "arrowup": 
-                this.selection.move({x: 0, y: -1})
+                this.selection.translate({x: 0, y: -1})
                 m.event.preventDefault()
                 return
             case "arrowdown": 
-                this.selection.move({x: 0, y: 1})
+                this.selection.translate({x: 0, y: 1})
                 m.event.preventDefault()
                 return
             case "arrowleft": 
-                this.selection.move({x: -1, y: 0})
+                this.selection.translate({x: -1, y: 0})
                 m.event.preventDefault()
                 return
             case "arrowright": 
-                this.selection.move({x: 1, y: 0})
+                this.selection.translate({x: 1, y: 0})
                 m.event.preventDefault()
                 return
         }

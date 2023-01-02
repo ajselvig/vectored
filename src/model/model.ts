@@ -1,14 +1,16 @@
 import { v4 as uuidv4 } from 'uuid'
-import Project from './project'
+import Project, { ProjectDef } from './project'
 import * as tuff from 'tuff-core'
-import Tile from './tile'
-import Group from './group'
-import Path from './path'
+import Tile, { TileDef } from './tile'
+import Group, { GroupDef } from './group'
+import Path, { PathDef } from './path'
 import { StyleDef, paintDef2string } from './style'
-import Use from './use'
+import Use, { UseDef } from './use'
 import * as interaction from '../ui/interaction'
 import * as styles from '../ui-styles.css'
 import { Box } from 'tuff-core/box'
+import { Vec } from 'tuff-core/vec'
+import { UpdateModelAction } from './model-actions'
 
 const log = new tuff.logging.Logger("Model")
 
@@ -29,6 +31,17 @@ export interface ModelTypeMap {
 }
 
 /**
+ * Maps model names to their definition classes.
+ */
+export interface ModelDefMap {
+    project: ProjectDef,
+    tile: TileDef,
+    group: GroupDef
+    path: PathDef
+    use: UseDef
+}
+
+/**
  * String values that can be used to identify a model class.
  */
 export type ModelTypeName = keyof ModelTypeMap
@@ -44,6 +57,8 @@ export type ModelRenderTag = tuff.svg.SvgParentTag
 export type ModelDef = {
     name?: string
     externId?: string
+    style?: StyleDef
+    styleId?: string
 }
 
 /**
@@ -70,6 +85,7 @@ export interface IModel {
     def: ModelDef
     render(parent: ModelRenderTag): void
     localBounds: Box
+    computeTranslateAction(v: Vec): UpdateModelAction<any> | null
 }
 
 /**
@@ -91,7 +107,7 @@ function nextCount(type: ModelTypeName): number {
 /**
  * Base class for all model objects that provides identity.
  */
-export default abstract class Model<DefType extends ModelDef, ChildType extends IModel> {
+export default abstract class Model<TypeName extends ModelTypeName, ChildType extends IModel> {
 
     readonly key: ModelKey
     readonly children: Array<ChildType>
@@ -118,8 +134,8 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
         this._tile = t
     }
 
-    constructor(type: ModelTypeName, 
-            public def: DefType, key?: ModelKey|null) {
+    constructor(type: TypeName, 
+            public def: ModelDefMap[TypeName], key?: ModelKey|null) {
         if (key) {
             this.key = key
         }
@@ -171,20 +187,24 @@ export default abstract class Model<DefType extends ModelDef, ChildType extends 
 
     abstract render(parent: ModelRenderTag): void
 
-}
+    /**
+     * Subclasses should override this if they can be translated.
+     * @param _ the translation vector
+     * @returns an action describing the change, or null if it doesn't apply
+     */
+    computeTranslateAction(_: Vec): UpdateModelAction<TypeName> | null {
+        return null
+    }
 
-/**
- * Model definition for models belonging to a project.
- */
-export type ProjectDef = ModelDef & {}
+}
 
 
 /**
  * Base class for all models belonging to a project.
  */
-export abstract class ProjectModel<DefType extends ProjectDef, ChildType extends IModel> extends Model<DefType, ChildType> {
+export abstract class ProjectModel<TypeName extends ModelTypeName, ChildType extends IModel> extends Model<TypeName, ChildType> {
 
-    constructor(type: ModelTypeName, readonly project: Project, def: DefType, key?: ModelKey|null) {
+    constructor(type: TypeName, readonly project: Project, def: ModelDefMap[TypeName], key?: ModelKey|null) {
         super(type, def, key)
         this.project.register(this)
     }
@@ -203,25 +223,13 @@ export abstract class ProjectModel<DefType extends ProjectDef, ChildType extends
             {x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height})
     }
 
-    get isSelected(): boolean{
-        return this.project.app.selection.isSelected(this.key)
-    }
-
-}
-
-/**
- * Model definition that includes style information.
- */
-export type StyledModelDef = ProjectDef & {
-    style?: StyleDef
-    styleId?: string
 }
 
 const overlayColor = '#00000088'
 
-export abstract class StyledModel<DefType extends StyledModelDef, ChildType extends IModel> extends ProjectModel<DefType, ChildType> {
+export abstract class StyledModel<TypeName extends ModelTypeName, ChildType extends IModel> extends ProjectModel<TypeName, ChildType> {
 
-    constructor(type: ModelTypeName, readonly project: Project, def: DefType, key?: ModelKey|null) {
+    constructor(type: TypeName, readonly project: Project, def: ModelDefMap[TypeName], key?: ModelKey|null) {
         super(type, project, def, key)
     }
 

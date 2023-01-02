@@ -1,5 +1,5 @@
 
-import { StyledModelDef, ModelRenderTag, StyledModel, ModelKey } from './model'
+import { ModelDef, ModelRenderTag, StyledModel, ModelKey } from './model'
 import Path from "./path"
 import Project from "./project"
 import * as tuff from 'tuff-core'
@@ -7,9 +7,11 @@ import Use from './use'
 import { Box } from 'tuff-core/box'
 const box = tuff.box
 
-export default class Group extends StyledModel<StyledModelDef, Path|Use|Group> {
+export type GroupDef = ModelDef
+
+export default class Group extends StyledModel<'group', Path|Use|Group> {
     
-    constructor(readonly project: Project, def: StyledModelDef|{}, key?: ModelKey|null) {
+    constructor(readonly project: Project, def: ModelDef|{}, key?: ModelKey|null) {
         super('group', project, def, key)
     }
 

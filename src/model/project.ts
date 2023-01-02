@@ -4,24 +4,19 @@ import { SvgParser } from '../io/svg-io'
 import Model, { IModel, ModelDef, ModelKey, ModelRenderTag} from './model'
 import Tile from './tile'
 import { Box } from 'tuff-core/box'
-import { AppPart } from '../view/app-part'
 
-type ProjectDef = ModelDef
+export type ProjectDef = ModelDef
 
-export default class Project extends Model<ProjectDef, Tile> {
+export default class Project extends Model<'project', Tile> {
     readonly items: {[id: string]: IModel}
 
-    constructor(readonly app: AppPart, key?: ModelKey|null) {
+    constructor(key?: ModelKey|null) {
         super('project', {}, key)
         this.items = {}
     }
 
     get project(): Project {
         return this
-    }
-
-    get selection() {
-        return this.app.selection
     }
 
     register(item: IModel) {

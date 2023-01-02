@@ -4,6 +4,9 @@ const log = new tuff.logging.Logger("Actions")
 
 type ActionSet = Set<ActionBase>
 
+/**
+ * Base class for all user actions tracked by `ActionHistory`.
+ */
 export abstract class ActionBase {
 
     abstract apply(app: AppPart): void
@@ -12,7 +15,10 @@ export abstract class ActionBase {
 
 }
 
-
+/**
+ * Keeps a history of all actions performed by the user
+ * and facilitates undo/redo.
+ */
 export class ActionHistory {
 
     private actionSets: Array<ActionSet> = []

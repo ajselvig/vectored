@@ -1,4 +1,4 @@
-import { ModelKey, ModelRenderTag, StyledModel, StyledModelDef } from './model'
+import { ModelKey, ModelRenderTag, StyledModel, ModelDef } from './model'
 import Project from "./project"
 import * as tuff from 'tuff-core'
 const vec = tuff.vec
@@ -9,6 +9,7 @@ import { Vec } from 'tuff-core/vec'
 import { Box } from 'tuff-core/box'
 import { Mat } from 'tuff-core/mat'
 import { Transform, transform2Mat } from './transform'
+import { UpdateModelAction } from './model-actions'
 
 const log = new tuff.logging.Logger("Path")
 
@@ -51,7 +52,7 @@ export type SubpathDef = {
 /**
  * Internal representation of a path as a collection of subpaths.
  */
-export type PathDef = StyledModelDef & {
+export type PathDef = ModelDef & {
     subpaths: Array<SubpathDef>
 }
 
@@ -133,7 +134,7 @@ export function transformPath(def: PathDef, transform: Mat|Transform): PathDef {
 /**
  * A series of vertices forming an open or closed path of straight and/or curved edges.
  */
-export default class Path extends StyledModel<PathDef, never> {
+export default class Path extends StyledModel<'path', never> {
 
     constructor(readonly project: Project, def: PathDef, key?: ModelKey) {
         super('path', project, def, key)
@@ -165,8 +166,12 @@ export default class Path extends StyledModel<PathDef, never> {
             const elem = parent.path(attrs)
             this.attachInteractionEmits(elem)
         }
+    }
 
-
+    
+    computeTranslateAction(v: Vec): UpdateModelAction<'path'> | null {
+        const toDef = translatePath(this.def, v)
+        return new UpdateModelAction('path', this, this.def, toDef)
     }
     
 }
@@ -375,4 +380,23 @@ export function pathDef2d(def: PathDef): string {
     }
 
     return comps.join(' ')
+}
+
+/**
+ * Translates a path
+ * @param inDef a path definition to translate
+ * @param v the amount by which to translate
+ */
+export function translatePath(inDef: PathDef, v: Vec): PathDef {
+    const outDef = {...inDef}
+    outDef.subpaths = inDef.subpaths.map(subpath => {
+        const d = {...subpath}
+        d.vertices = subpath.vertices.map(inVert => {
+            const outVert = {...inVert}
+            outVert.point = vec.add(inVert.point, v)
+            return outVert
+        })
+        return d
+    })
+    return outDef
 }

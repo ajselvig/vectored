@@ -6,6 +6,7 @@ import { IModel, ModelKey } from '../model/model'
 import Tile from '../model/tile'
 import Selection from '../ui/selection'
 import { ProjectLevelPart, ProjectState } from './project-level-part'
+import { AppPart } from './app-part'
 
 const log = new tuff.logging.Logger("Tree")
 
@@ -22,7 +23,7 @@ export class Tree extends ProjectLevelPart<ProjectState> {
         let newPart = false
         this.state.project.eachOfType("tile", tile => {
             if (!parts[tile.id]) {
-                parts[tile.id] = this.makePart(TreeTilePart, tile)
+                parts[tile.id] = this.makePart(TreeTilePart, {tile, app: this.state.app})
                 newPart = true
             }
         })
@@ -44,31 +45,38 @@ export class Tree extends ProjectLevelPart<ProjectState> {
 
 export const TreeItemClick = tuff.messages.typedKey<ModelKey>()
 
+type TileState = {
+    tile: Tile
+    app: AppPart
+}
 
-class TreeTilePart extends tuff.parts.Part<Tile> {
+class TreeTilePart extends tuff.parts.Part<TileState> {
 
+    tile!: Tile
     selection!: Selection
     project!: Project
 
     async init() {
-        this.project = this.state.project
-        this.selection = this.project.selection
+        
+        this.tile = this.state.tile
+        this.project = this.tile.project
+        this.selection = this.state.app.selection
 
-        log.info(`Initializing tree tile event listeners for ${this.state.def.name}`)
+        log.info(`Initializing tree tile event listeners for ${this.tile.def.name}`)
         this.onClick(TreeItemClick, m => {
             log.info(`Clicked tree item`, m.data)
             const item = this.project.find(m.data)
             this.selection.append(item, !m.event.shiftKey)
         })
 
-        this.selection.addListener(`tree-tile-${this.state.id}`, (_) => {
+        this.selection.addListener(`tree-tile-${this.tile.id}`, (_) => {
             this.dirty()
         })
     }
 
     render(parent: tuff.parts.PartTag) {
-        log.info(`Rendering tree for ${this.state.def.name}`)
-        this.renderItem(parent, this.state)
+        log.info(`Rendering tree for ${this.tile.def.name}`)
+        this.renderItem(parent, this.tile)
 
     }
 
