@@ -141,7 +141,7 @@ export function parsePaintDef(raw: string): PaintDef | undefined {
             }
         }
         else if (comp == 'none' || comp == 'transparent') {
-            def.color = undefined
+            def.color = comp
         }
         else {
             def.color = parseColor(comp)

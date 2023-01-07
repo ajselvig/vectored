@@ -13,9 +13,11 @@ import viteUrl from '/assets/test/vite.svg'
 import npmUrl from '/assets/test/npm.svg'
 import svgUrl from '/assets/test/svg.svg'
 import vitestUrl from '/assets/test/vitest.svg'
+import tuffUrl from '/assets/test/tuff.svg'
 import Selection, { SelectionInteractor } from "../ui/selection"
 
 const urls = [
+    tuffUrl,
     tsUrl,
     viteUrl,
     npmUrl,

@@ -107,7 +107,7 @@ export default class Project extends Model<'project', Tile> {
         let y = 0
         let yNext = 0
         const gap = 2*this.planeGridSize
-        const numCols = Math.ceil(Math.sqrt(this.count))
+        const numCols = Math.floor(Math.sqrt(this.count))
         this.eachOfType("tile", tile => {
             tile.def.bounds = {...tile.def.bounds, x, y}
             x = this.clampToPlaneGrid(x + tile.def.bounds.width + gap)
