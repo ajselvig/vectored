@@ -3,10 +3,11 @@ import * as styles from '../ui-styles.css'
 import * as tuff from 'tuff-core'
 const mat = tuff.mat
 const box = tuff.box
+const vec = tuff.vec
 const arrays = tuff.arrays
 import { Interactor } from "./interaction"
 import { OverlayContext } from "../view/overlay"
-import Tile from "../model/tile"
+import Tile, { tileUpdatedKey } from "../model/tile"
 import { Vec } from "tuff-core/vec"
 import { Box } from "tuff-core/box"
 import { AppPart } from "../view/app-part"
@@ -53,8 +54,15 @@ export default class Selection {
     /**
      * @returns the number of items in the selection
      */
-    count() {
+    get count() {
         return Object.keys(this.items).length
+    }
+
+    /**
+     * @returns true if the selection is empty
+     */
+    get empty() {
+        return this.count == 0
     }
 
     /**
@@ -116,10 +124,17 @@ export default class Selection {
     }
 
     /**
+     * All tiles for selected items.
+     */
+    get tiles(): Tile[] {
+        return arrays.unique(arrays.compact(this.map(c => c.tile)))
+    }
+
+    /**
      * The shared tile of all selected values, or undefined if there's more than one.
      */
     get tile(): Tile|undefined {
-       const tiles = arrays.unique(this.map(c => c.tile))
+       const tiles = this.tiles
        if (tiles.length == 1) {
            return tiles[0]
        }
@@ -127,13 +142,35 @@ export default class Selection {
     }
 
     /**
+     * Emits the tilesUpdatedKey message for all tiles.
+     */
+    emitTilesUpdated() {
+        this.tiles.forEach(tile => {
+            this.app.emitMessage(tileUpdatedKey, {id: tile.id})
+        })
+    }
+
+    /**
+     * Clear the interact transform on all selected items.
+     */
+    clearInteractTransform() {
+        this.each(item => {
+            item.interactTransform = undefined
+        })
+    }
+
+    /**
      * A single item can be hovered at any given time.
      */
     hoverItem?: IModel = undefined
 
-
+    /**
+     * Translates all selected models by the given amount.
+     * @param v the translation to apply
+     */
     translate(v: Vec) {
         log.info(`Translating selection`, v)
+        this.clearInteractTransform()
         const possibleActions = Object.values(this.items).map(item => {
             return item.computeTranslateAction(v)
         })
@@ -149,33 +186,80 @@ export default class Selection {
 
 }
 
+/**
+ * Have one consistent way of computing the position of a mouse event.
+ * @param event a mouse event
+ * @returns the client position of the event
+ */
+function eventPos(event: MouseEvent): Vec {
+    return {x: event.clientX, y: event.clientY}
+}
 
+/**
+ * The default interactor that lets the user select and move one or more model objects.
+ */
 export class SelectionInteractor extends Interactor {
+
+    dragAnchor?: Vec
 
     constructor(readonly selection: Selection) {
         super()
+    }
+
+    onMouseOver(model: IModel, _: MouseEvent) {
+        log.info('Mouse Over', model)
+        this.selection.hoverItem = model
+    }
+
+    onMouseOut(model: IModel, _: MouseEvent) {
+        log.info('Mouse Out', model)
+        this.selection.hoverItem = undefined
     }
     
     onMouseDown(model: IModel, event: MouseEvent) {
         log.info(`Mouse down`, model)
         this.selection.append(model, !event.shiftKey)
+
+        // only start a drag operation if the types are consistent
+        const types = this.selection.types
+        if (!types.includes('tile')) {
+            this.dragAnchor = eventPos(event)
+            log.info(`Beginning drag at `, this.dragAnchor)
+        }
+
     }
 
-    onMouseOver(model: IModel, _: MouseEvent): void {
-        log.info('Mouse Over', model)
-        this.selection.hoverItem = model
+    onMouseMove(event: MouseEvent) {
+        if (!this.dragAnchor || this.selection.empty) {
+            return
+        }
+
+        const pos = eventPos(event)
+        const diff = vec.subtract(pos, this.dragAnchor)
+        log.info(`Drag ${this.selection.count} items by `, diff)
+        const transform = mat.builder().translate(diff).build()
+        this.selection.each(item => {
+            item.interactTransform = transform
+        })
+        this.selection.emitTilesUpdated()
     }
 
-    onMouseOut(model: IModel, _: MouseEvent): void {
-        log.info('Mouse Out', model)
-        this.selection.hoverItem = undefined
+    onMouseUp(event: MouseEvent) {
+        if (!this.dragAnchor || this.selection.empty) {
+            return
+        }
+        const pos = eventPos(event)
+        const diff = vec.subtract(pos, this.dragAnchor)
+        log.info(`Translate ${this.selection.count} items by `, diff)
+        this.selection.translate(diff)
+        this.dragAnchor = undefined
     }
 
     onKeyPress(m: tuff.messages.Message<"keypress", tuff.messages.KeyPress>): void {
         log.info(`Selection KeyPress: ${m.data.id}`)
 
         // don't keep going if the selection is empty
-        if (!this.selection.count()) {
+        if (this.selection.empty) {
             return
         }
         
@@ -205,7 +289,13 @@ export class SelectionInteractor extends Interactor {
             if (this.selection.hoverItem.tile) {
                 ctx.setTile(this.selection.hoverItem.tile)
             }
-            const localBounds = this.selection.hoverItem.localBounds
+            let localBounds = this.selection.hoverItem.localBounds
+
+            // apply the interact transform
+            if (this.selection.hoverItem.interactTransform) {
+                localBounds = mat.transformBox(this.selection.hoverItem.interactTransform, localBounds)
+            }
+
             const actualBounds = mat.transformBox(ctx.localToActual, localBounds)
             this.renderSelectionBox(ctx, actualBounds, 'hover')
         }
@@ -223,9 +313,20 @@ export class SelectionInteractor extends Interactor {
             bounds = mat.transformBox(ctx.virtualToActual, bounds)
             this.renderSelectionBox(ctx, bounds)
         }
-        else if (this.selection.count()) {
+        else if (this.selection.count) {
             // something other than all tiles
-            const localBounds = box.unionAll(this.selection.map(m => m.localBounds))
+
+            // get all local bounds with the interact transform applied
+            const allLocalBounds = this.selection.map(m => {
+                let lb = m.localBounds
+                if (m.interactTransform) {
+                    lb = mat.transformBox(m.interactTransform, lb)
+                }
+                return lb
+            })
+
+            const localBounds = box.unionAll(allLocalBounds)
+
             const actualBounds = mat.transformBox(ctx.localToActual, localBounds)
             this.renderSelectionBox(ctx, actualBounds)
         }

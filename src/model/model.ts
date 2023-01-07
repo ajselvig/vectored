@@ -11,6 +11,7 @@ import * as styles from '../ui-styles.css'
 import { Box } from 'tuff-core/box'
 import { Vec } from 'tuff-core/vec'
 import { UpdateModelAction } from './model-actions'
+import { Mat } from 'tuff-core/mat'
 
 const log = new tuff.logging.Logger("Model")
 
@@ -86,6 +87,7 @@ export interface IModel {
     render(parent: ModelRenderTag): void
     localBounds: Box
     computeTranslateAction(v: Vec): UpdateModelAction<any> | null
+    interactTransform?: Mat
 }
 
 /**
@@ -195,6 +197,8 @@ export default abstract class Model<TypeName extends ModelTypeName, ChildType ex
     computeTranslateAction(_: Vec): UpdateModelAction<TypeName> | null {
         return null
     }
+
+    interactTransform?: Mat
 
 }
 

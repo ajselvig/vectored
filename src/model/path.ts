@@ -8,7 +8,7 @@ import svgpath from 'svgpath'
 import { Vec } from 'tuff-core/vec'
 import { Box } from 'tuff-core/box'
 import { Mat } from 'tuff-core/mat'
-import { Transform, transform2Mat } from './transform'
+import { mat2string, Transform, transform2Mat } from './transform'
 import { UpdateModelAction } from './model-actions'
 
 const log = new tuff.logging.Logger("Path")
@@ -153,6 +153,11 @@ export default class Path extends StyledModel<'path', never> {
         const style = this.computedStyle
         if (style) {
             this.applyStyle(attrs, style)
+        }
+
+        // apply the interact transform
+        if (this.interactTransform) {
+            attrs.transform = mat2string(this.interactTransform)
         }
         
         // possibly render a separate interact path

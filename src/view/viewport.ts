@@ -37,7 +37,10 @@ export class Viewport extends ProjectLevelPart<ProjectState> {
 
     viewportSize!: Vec
 
-    scrollKey = tuff.messages.untypedKey()
+    /**
+     * General untyped interaction key for messages not associated with a specific model.
+     */
+    interactKey = tuff.messages.untypedKey()
 
     async init() {
         this.onClick(zoomInKey, _ => {
@@ -47,7 +50,7 @@ export class Viewport extends ProjectLevelPart<ProjectState> {
             this.zoomOut()
         }, {attach: "passive"})
 
-        this.onScroll(this.scrollKey, _ => {
+        this.onScroll(this.interactKey, _ => {
             // log.info('scroll')
             // this.stale()
         })
@@ -55,22 +58,32 @@ export class Viewport extends ProjectLevelPart<ProjectState> {
         this.overlayPart = this.makePart(OverlayPart, this as Viewport)
 
 
-        this.onMouseOver(interaction.key, m => {
+        this.onMouseOver(interaction.modelKey, m => {
             log.debug(`Model mouse over`, m)
             const model = this.getModel(m)
             this.interactor.onMouseOver(model, m.event)
             this.overlayPart.dirty()
         })
-        this.onMouseOut(interaction.key, m => {
+        this.onMouseOut(interaction.modelKey, m => {
             log.debug(`Model mouse out`, m)
             const model = this.getModel(m)
             this.interactor.onMouseOut(model, m.event)
             this.overlayPart.dirty()
         })
-        this.onMouseDown(interaction.key, m => {
-            log.debug(`Model mouse down`, m)
+        this.onMouseDown(interaction.modelKey, m => {
+            log.info(`Model mouse down`, m)
             const model = this.getModel(m)
             this.interactor.onMouseDown(model, m.event)
+            this.overlayPart.dirty()
+        })
+        this.onMouseMove(this.interactKey, m => {
+            log.info(`Mouse move`, m)
+            this.interactor.onMouseMove(m.event)
+            this.overlayPart.dirty()
+        })
+        this.onMouseUp(this.interactKey, m => {
+            log.info(`Mouse up`, m)
+            this.interactor.onMouseUp(m.event)
             this.overlayPart.dirty()
         })
 
@@ -247,7 +260,9 @@ export class Viewport extends ProjectLevelPart<ProjectState> {
         const gridSize = this.project.planeGridSize
 
         parent.div(styles.viewportScroller, scroller => {
-            scroller.emitScroll(this.scrollKey)
+            scroller.emitScroll(this.interactKey)
+            scroller.emitMouseMove(this.interactKey)
+            scroller.emitMouseUp(this.interactKey)
             scroller.div(styles.plane, plane => { 
                 // make a separate plane layer to collect interaction events 
                 // so it doesn't receive any events from the rest of the children

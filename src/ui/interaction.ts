@@ -3,26 +3,32 @@ import { IModel, ModelKey } from '../model/model'
 import { OverlayContext } from '../view/overlay'
 
 
-export const key = tuff.messages.typedKey<ModelKey>()
+export const modelKey = tuff.messages.typedKey<ModelKey>()
 
 
 export function attachEmits(model: IModel, elem: tuff.svg.SvgParentTag) {
-    elem.emitMouseDown(key, model.key)
-    elem.emitMouseOver(key, model.key)
-    elem.emitMouseOut(key, model.key)
+    elem.emitMouseDown(modelKey, model.key)
+    elem.emitMouseOver(modelKey, model.key)
+    elem.emitMouseOut(modelKey, model.key)
+    // we don't need to emit MouseMove or MouseUp since 
+    // those are emitted from the viewport directly
 }
 
 
 export abstract class Interactor {
-
-    abstract onMouseDown(model: IModel, event: MouseEvent): void
+    onMouseDown(_model: IModel, _event: MouseEvent) {
+    }
     
     onMouseOver(_model: IModel, _event: MouseEvent) {
-
     }
     
     onMouseOut(_model: IModel, _event: MouseEvent) {
-
+    }
+    
+    onMouseMove(_event: MouseEvent) {
+    }
+    
+    onMouseUp(_event: MouseEvent) {
     }
 
     onKeyPress(_m: tuff.messages.Message<"keypress", tuff.messages.KeyPress>) {
